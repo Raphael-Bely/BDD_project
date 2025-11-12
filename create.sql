@@ -21,6 +21,7 @@ CREATE TABLE items
     item_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     prix DECIMAL(10, 2) NOT NULL,
+    est_disponible BOOLEAN NOT NULL DEFAULT TRUE,
     restaurant_id INT REFERENCES restaurants(restaurant_id),
     categorie_item_id INT REFERENCES categories_items(categorie_item_id)
 );
