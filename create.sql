@@ -10,6 +10,12 @@ CREATE TABLE restaurants
 
 CREATE INDEX idx_restaurants_coords ON restaurants USING GIST (coordonnees_gps);
 
+CREATE TABLE categories_items
+(
+    categorie_item_id SERIAL PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE items
 (
     item_id SERIAL PRIMARY KEY,
@@ -53,12 +59,6 @@ CREATE TABLE etre_accompagne_de
     item_id1 INT REFERENCES items(item_id),
     item_id2 INT REFERENCES items(item_id),
     PRIMARY KEY (item_id1, item_id2)
-);
-
-CREATE TABLE categories_items
-(
-    categorie_item_id SERIAL PRIMARY KEY,
-    nom VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE horaires_ouverture
