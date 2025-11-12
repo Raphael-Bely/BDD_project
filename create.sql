@@ -1,10 +1,18 @@
+CREATE EXTENSION postgis;
+
 CREATE TABLE restaurants
 (
     restaurant_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     adresse VARCHAR(255) NOT NULL,
+<<<<<<< HEAD
     coordonnees_gps VARCHAR(255) NOT NULL
+=======
+    coordonnees_gps geography(POINT, 4326) NOT NULL,
+>>>>>>> 00112ae935618d4286d46808165e84c1a34d1b3c
 );
+
+CREATE INDEX idx_restaurants_coords ON restaurants USING GIST (coordonnees_gps);
 
 CREATE TABLE items
 (

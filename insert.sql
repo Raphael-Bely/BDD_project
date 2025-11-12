@@ -1,0 +1,1 @@
+-- pour insérer les coordonnées géographique : ST_SetSRID(ST_MakePoint(x, y), 4326)
