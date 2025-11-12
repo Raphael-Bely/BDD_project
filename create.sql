@@ -3,7 +3,7 @@ CREATE TABLE restaurants
     restaurant_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     adresse VARCHAR(255) NOT NULL,
-    coordonnees_gps VARCHAR(255) NOT NULL,
+    coordonnees_gps VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE items
@@ -93,9 +93,9 @@ CREATE TABLE clients
     adresse VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE fidelité
+CREATE TABLE fidelite
 (
-    fidélité_id SERIAL PRIMARY KEY,
+    fidelite_id SERIAL PRIMARY KEY,
     points INT NOT NULL DEFAULT 0,
     client_id INT REFERENCES clients(client_id),
     restaurant_id INT REFERENCES restaurants(restaurant_id)
@@ -107,7 +107,7 @@ CREATE TABLE commentaires
     date_commentaire TIMESTAMP NOT NULL,
     contenu TEXT NOT NULL,
     note INT CHECK (note >= 1 AND note <= 5),
-    fidelité_id REFERENCES fidelité(fidelité_id)
+    fidelite_id INT REFERENCES fidelité(fidelite_id)
 );
 
 CREATE TABLE formules
