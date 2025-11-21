@@ -510,7 +510,7 @@ INSERT INTO avoir_conditions_formules (formule_id, condition_formule_id) VALUES
 (5, 5);
 
 -- COMMANDE 1: Client 1 (Alice) achète 1 item à la Pizzeria (Resto 2)
-INSERT INTO commandes (date_commande, heure_retrait, prix_total_remise, client_id, restaurant_id)
+INSERT INTO commandes (date_commande, prix_total_remise, client_id, restaurant_id)
 VALUES (NOW() - INTERVAL '10 days', 12.00, 1, 2);
 -- Contenu (Item 6 = Pizza Margherita)
 INSERT INTO contenir_items (commande_id, item_id, quantite)

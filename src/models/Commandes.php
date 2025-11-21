@@ -21,7 +21,25 @@ class Commande {
 
         $stmt->execute();
         
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $stmt;
+    }
+
+    public function suppressCurrentCommande($commande_id) {
+        $path = __DIR__ . '/../../sql_requests/suppressCurrentCommande.sql';
+
+        $query = file_get_contents($path);
+
+        if ($query == false) {
+            die("Erreur : impossible de lire fichier de requête SQL :" . $path);
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(1, $commande_id);
+
+        $stmt->execute();
+        
+        return $stmt;
     }
 }
 

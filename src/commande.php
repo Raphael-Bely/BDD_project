@@ -19,7 +19,7 @@ $db = $database->getConnection();
 
 $commande = new Commande($db);
 
-$commande_info = $commande->getCurrentCommande($client_id);
+$stmt = $commande->getCurrentCommande($client_id);
 
 include 'views/derniere_commande.php';
 ?>

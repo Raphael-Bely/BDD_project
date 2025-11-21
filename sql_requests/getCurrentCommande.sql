@@ -1,5 +1,5 @@
 SELECT c.*
 FROM commandes as c
 WHERE client_id = ?
-ORDER BY c.date_commande DESC
-LIMIT 1;
+AND est_acheve = FALSE
+ORDER BY c.date_commande DESC;

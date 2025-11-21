@@ -13,11 +13,15 @@
             max-width: 500px;
             margin: 0 auto;
             border-left: 5px solid #2c3e50;
+            position: relative; /* Pour le positionnement */
         }
         .commande-header {
             border-bottom: 1px solid #eee;
             margin-bottom: 15px;
             padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .commande-header h2 { margin: 0; color: #333; }
         .commande-info p { margin: 8px 0; font-size: 1.1em; }
@@ -31,6 +35,23 @@
         }
         .alert { color: #c0392b; font-weight: bold; }
         .btn-retour { display: inline-block; margin-top: 20px; text-decoration: none; color: #333;}
+
+        /* NOUVEAU STYLE POUR LE BOUTON ANNULER */
+        .btn-annuler {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .btn-annuler:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -38,37 +59,46 @@
     <a href="index.php" class="btn-retour">← Retour</a>
 
     <?php
-    // On vérifie si $commande_info contient des données (n'est pas false)
-    if ($commande_info) {
-        
-        // Formatage de la date de commande
-        $dateCmd = new DateTime($commande_info['date_commande']);
-        $dateAffichee = $dateCmd->format('d/m/Y à H:i');
+    if ($stmt->rowCount() > 0) {
 
-        // Gestion du prix (remplacer le point par une virgule)
-        $prixAffiche = number_format($commande_info['prix_total_remise'], 2, ',', ' ');
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            extract($row); // Cela crée les variables $date_commande, $prix_total_remise, $commande_id, etc.
+            
+            $dateCmd = new DateTime($date_commande);
+            $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
-        echo "<div class='commande-card'>";
-            echo "<div class='commande-header'>";
-                echo "<h2>Commande #" . htmlspecialchars($commande_info['commande_id']) . "</h2>";
+            $prixAffiche = number_format($prix_total_remise, 2, ',', ' ');
+
+            echo "<div class='commande-card'>";
+                echo "<div class='commande-header'>";
+                    // On affiche le numéro pour être précis
+                    echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
+                echo "</div>";
+
+                echo "<div class='commande-info'>";
+                    echo "<p><span class='label'>Date de commande :</span> " . $dateAffichee . "</p>";
+                    
+                    if (!empty($heure_retrait)) {
+                        $retraitCmd = new DateTime($heure_retrait);
+                        $heureRetrait = $retraitCmd->format('H:i');
+                        echo "<p><span class='label'>Heure de retrait prévue :</span> " . $heureRetrait . "</p>";
+                    } else {
+                        echo "<p><span class='label'>Retrait :</span> <span style='color:#777; font-style:italic;'>Non spécifié</span></p>";
+                    }
+
+                    echo "<div class='prix-total'>" . $prixAffiche . " €</div>";
+
+                    // --- AJOUT DU FORMULAIRE D'ANNULATION ---
+                    // Ce formulaire envoie l'ID à 'annuler_commande.php' via POST
+                    echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
+                        echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                        echo "<button type='submit' class='btn-annuler'>🗑️ Annuler la commande</button>";
+                    echo "</form>";
+                    // ----------------------------------------
+
+                echo "</div>";
             echo "</div>";
-
-            echo "<div class='commande-info'>";
-                echo "<p><span class='label'>Date de commande :</span> " . $dateAffichee . "</p>";
-
-                // Affichage conditionnel de l'heure de retrait
-                if (!empty($commande_info['heure_retrait'])) {
-                    $retraitCmd = new DateTime($commande_info['heure_retrait']);
-                    $heureRetrait = $retraitCmd->format('H:i');
-                    echo "<p><span class='label'>Heure de retrait prévue :</span> " . $heureRetrait . "</p>";
-                } else {
-                    echo "<p><span class='label'>Retrait :</span> <span style='color:#777; font-style:italic;'>Non spécifié</span></p>";
-                }
-
-                echo "<div class='prix-total'>" . $prixAffiche . " €</div>";
-            echo "</div>";
-        echo "</div>";
-
+        }
     } else {
         echo "<div class='commande-card'>";
         echo "<p class='alert'>Aucune commande trouvée pour ce client.</p>";

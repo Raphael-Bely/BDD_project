@@ -150,6 +150,7 @@ CREATE TABLE commandes
     date_commande TIMESTAMP NOT NULL,
     heure_retrait TIMESTAMP,
     prix_total_remise DECIMAL(10, 2) NOT NULL,
+    est_acheve BOOLEAN DEFAULT FALSE,
     client_id INT REFERENCES clients(client_id),
     restaurant_id INT REFERENCES restaurants(restaurant_id)
 );
