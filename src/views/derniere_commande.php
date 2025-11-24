@@ -71,7 +71,6 @@
 
             echo "<div class='commande-card'>";
                 echo "<div class='commande-header'>";
-                    // On affiche le numéro pour être précis
                     echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
                 echo "</div>";
 
@@ -85,9 +84,50 @@
                     } else {
                         echo "<p><span class='label'>Retrait :</span> <span style='color:#777; font-style:italic;'>Non spécifié</span></p>";
                     }
-
-                    echo "<div class='prix-total'>" . $prixAffiche . " €</div>";
-
+                    echo "<h2>📦 Articles de la commande</h2>";
+                    
+                    // Récupérer les articles
+                    $commande_model = new Commande($db);
+                    $stmt_items = $commande_model->afficherItemCommande($commande_id);
+                    
+                    if ($stmt_items->rowCount() > 0) {
+                        $total = 0;
+                        
+                        echo "<table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>";
+                        echo "<thead>";
+                        echo "<tr style='background-color: #34495e; color: white;'>";
+                        echo "<th style='padding: 10px; text-align: left;'>Article</th>";
+                        echo "<th style='padding: 10px; text-align: left;'>Prix unitaire</th>";
+                        echo "<th style='padding: 10px; text-align: center;'>Quantité</th>";
+                        echo "<th style='padding: 10px; text-align: right;'>Sous-total</th>";
+                        echo "</tr>";
+                        echo "</thead>";
+                        echo "<tbody>";
+                        
+                        while ($item = $stmt_items->fetch(PDO::FETCH_ASSOC)) {
+                            $nom = htmlspecialchars($item['nom']);
+                            $prix = $item['prix'];
+                            $quantite = $item['quantite'];
+                            $sousTotal = $prix * $quantite;
+                            $total += $sousTotal;
+                            
+                            echo "<tr style='border-bottom: 1px solid #ecf0f1;'>";
+                            echo "<td style='padding: 10px;'><strong>{$nom}</strong></td>";
+                            echo "<td style='padding: 10px;'>" . number_format($prix, 2, ',', ' ') . " €</td>";
+                            echo "<td style='padding: 10px; text-align: center;'>{$quantite}</td>";
+                            echo "<td style='padding: 10px; text-align: right; font-weight: bold; color: #e74c3c;'>" . number_format($sousTotal, 2, ',', ' ') . " €</td>";
+                            echo "</tr>";
+                        }
+                        
+                        echo "<tr style='background-color: #ecf0f1; font-weight: bold; font-size: 1.1em;'>";
+                        echo "<td colspan='3' style='padding: 10px;'>TOTAL</td>";
+                        echo "<td style='padding: 10px; text-align: right; color: #27ae60; font-size: 1.2em;'>" . number_format($total, 2, ',', ' ') . " €</td>";
+                        echo "</tr>";
+                        echo "</tbody>";
+                        echo "</table>";
+                    } else {
+                        echo "<p style='color: #7f8c8d; font-style: italic;'>Aucun article trouvé pour cette commande.</p>";
+                    }
                     // --- AJOUT DU FORMULAIRE D'ANNULATION ---
                     // Ce formulaire envoie l'ID à 'annuler_commande.php' via POST
                     echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";

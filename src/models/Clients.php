@@ -51,7 +51,7 @@ class Client {
 
         $stmt = $this->conn->prepare($query);
         
-        $stmt->bindParam(1,$mail);
+        $stmt->bindParam(1,$email);
 
         $stmt->execute();
 
