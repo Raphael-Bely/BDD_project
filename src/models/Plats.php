@@ -18,6 +18,14 @@ class Plat {
 
         return $stmt;
     }
+
+    public function getItemsDisponibles($restaurant_id, $categorie_id) {
+        $query = Query::loadQuery('sql_requests/getItemFromSpecificCategories.sql');
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$restaurant_id, $categorie_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
 ?>

@@ -66,6 +66,26 @@
         .composition-item:last-child { border-bottom: none; }
 
         .empty-msg { color: #7f8c8d; font-style: italic; }
+
+        /* ... vos autres styles ... */
+
+        .btn-choisir {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 0;
+            margin-top: 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-choisir:hover {
+            background-color: #27ae60;
+        }
     </style>
 </head>
 <body>
@@ -77,54 +97,59 @@
     <h2>Formules 🍱</h2>
 
     <div class="formules-grid">
-        <?php
-        // --- ÉTAPE 1 : REGROUPEMENT DES DONNÉES ---
-        // La requête SQL renvoie une ligne par composant.
-        // On doit regrouper tout ça par "Nom de formule".
+    <?php
+    $formules_organisees = [];
+
+    if ($info_formules->rowCount() > 0) {
         
-        $formules_organisees = [];
-
-        if ($info_formules->rowCount() > 0) {
-            while ($row = $info_formules->fetch(PDO::FETCH_ASSOC)) {
-                $nom = $row['nom'];
-                
-                // Si cette formule n'est pas encore dans notre liste, on l'initialise
-                if (!isset($formules_organisees[$nom])) {
-                    $formules_organisees[$nom] = [
-                        'prix' => $row['prix'],
-                        'composition' => [] // Liste des IDs de catégories
-                    ];
-                }
-
-                // On ajoute la catégorie (composant) à cette formule
-                $formules_organisees[$nom]['composition'][] = $row['nom_categorie'];
+        // --- ÉTAPE 1 : REGROUPEMENT ---
+        while ($row = $info_formules->fetch(PDO::FETCH_ASSOC)) {
+            $nom = $row['nom'];
+            
+            if (!isset($formules_organisees[$nom])) {
+                $formules_organisees[$nom] = [
+                    'id' => $row['formule_id'], // <--- IMPORTANT : On stocke l'ID ici
+                    'prix' => $row['prix'],
+                    'composition' => [] 
+                ];
             }
 
-            // --- ÉTAPE 2 : AFFICHAGE ---
-            foreach ($formules_organisees as $nom_formule => $details) {
-                ?>
-                <div class="formule-card">
-                    <div class="formule-header">
-                        <h3 class="formule-title"><?= htmlspecialchars($nom_formule) ?></h3>
-                        <span class="formule-prix"><?= htmlspecialchars($details['prix']) ?> €</span>
-                    </div>
-                    
-                    <p><strong>Composition :</strong></p>
-                    <ul class="composition-list">
-                        <?php foreach ($details['composition'] as $nom_categorie): ?>
-                            <li class="composition-item">
-                                <?= htmlspecialchars($nom_categorie) ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-                <?php
-            }
-        } else {
-            echo "<p class='empty-msg'>Aucune formule disponible pour ce restaurant.</p>";
+            // On ajoute la catégorie (composant) à cette formule
+            // (Assurez-vous que votre requête SQL renvoie bien 'nom_categorie')
+            $formules_organisees[$nom]['composition'][] = $row['nom_categorie']; 
         }
-        ?>
-    </div>
+
+        // --- ÉTAPE 2 : AFFICHAGE ---
+        foreach ($formules_organisees as $nom_formule => $details) {
+            ?>
+            <div class="formule-card">
+                <div class="formule-header">
+                    <h3 class="formule-title"><?= htmlspecialchars($nom_formule) ?></h3>
+                    <span class="formule-prix"><?= htmlspecialchars($details['prix']) ?> €</span>
+                </div>
+                
+                <p><strong>Composition :</strong></p>
+                <ul class="composition-list">
+                    <?php foreach ($details['composition'] as $nom_cat): ?>
+                        <li class="composition-item">
+                            <?= htmlspecialchars($nom_cat) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+
+                <a href="configurer_formule.php?action=init&formule_id=<?= $details['id'] ?>&restaurant_id=<?= $restaurant_id ?>" 
+                   class="btn-choisir">
+                   Choisir ce menu
+                </a>
+
+            </div>
+            <?php
+        }
+    } else {
+        echo "<p class='empty-msg'>Aucune formule disponible pour ce restaurant.</p>";
+    }
+    ?>
+</div>
 
 </body>
 </html>

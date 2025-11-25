@@ -164,13 +164,16 @@ CREATE TABLE contenir_items
     PRIMARY KEY (commande_id, item_id)
 );
 
-CREATE TABLE contenir_formules
-(
+CREATE TABLE contenir_formules (
+    id SERIAL PRIMARY KEY, 
     commande_id INT REFERENCES commandes(commande_id) ON DELETE CASCADE,
-    formule_id INT REFERENCES formules(formule_id) ON DELETE CASCADE,
-    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
-    quantite INT NOT NULL,
-    PRIMARY KEY (commande_id, formule_id, item_id)
+    formule_id INT REFERENCES formules(formule_id),
+    quantite INT DEFAULT 1
+);
+
+CREATE TABLE details_commande_formule (
+    contenir_formule_id INT REFERENCES contenir_formules(id) ON DELETE CASCADE,
+    item_id INT REFERENCES items(item_id)
 );
 
 CREATE TABLE remises
@@ -200,24 +203,134 @@ CREATE TABLE pourcentage_remise
 
 -- FUNCTIONS
 
+-- SECONDAIRES
+
+CREATE OR REPLACE FUNCTION obtenir_ou_creer_commande(
+    p_client_id INT, 
+    p_restaurant_id INT
+) RETURNS INT AS $$
+DECLARE
+    v_commande_id INT;
+BEGIN
+
+    SELECT commande_id INTO v_commande_id
+    FROM commandes 
+    WHERE client_id = p_client_id 
+      AND restaurant_id = p_restaurant_id 
+      AND est_acheve = FALSE
+    LIMIT 1;
+
+    IF v_commande_id IS NULL THEN
+        INSERT INTO commandes (client_id, restaurant_id, date_commande)
+        VALUES (p_client_id, p_restaurant_id, NOW())
+        RETURNING commande_id INTO v_commande_id;
+    END IF;
+
+    RETURN v_commande_id;
+END;
+$$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION update_prix_commande_func() RETURNS TRIGGER AS $$
+DECLARE
+    target_commande_id INT;
 BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        target_commande_id := OLD.commande_id;
+    ELSE
+        target_commande_id := NEW.commande_id;
+    END IF;
+
     UPDATE commandes
     SET prix_total_remise = (
-        SELECT COALESCE(SUM(i.prix * ci.quantite), 0)
-        FROM contenir_items ci
-        JOIN items i ON ci.item_id = i.item_id
-        WHERE ci.commande_id = NEW.commande_id
+        COALESCE((
+            SELECT SUM(i.prix * ci.quantite) 
+            FROM contenir_items ci 
+            JOIN items i ON ci.item_id = i.item_id 
+            WHERE ci.commande_id = target_commande_id
+        ), 0)
+        +
+        COALESCE((
+            SELECT SUM(f.prix) 
+            FROM contenir_formules cf 
+            JOIN formules f ON cf.formule_id = f.formule_id 
+            WHERE cf.commande_id = target_commande_id
+        ), 0)
     )
-    WHERE commande_id = NEW.commande_id;
-    RETURN NEW;
+    WHERE commande_id = target_commande_id;
+
+    RETURN NULL; 
+END;
+$$ LANGUAGE plpgsql;
+
+
+--PRIMAIRES
+
+CREATE OR REPLACE FUNCTION ajouter_au_panier(
+    p_client_id INT, 
+    p_restaurant_id INT, 
+    p_item_id INT
+) RETURNS BOOLEAN AS $$
+DECLARE
+    v_commande_id INT;
+    v_count INT;
+BEGIN
+    v_commande_id := obtenir_ou_creer_commande(p_client_id, p_restaurant_id);
+
+    SELECT count(*) INTO v_count FROM contenir_items 
+    WHERE commande_id = v_commande_id AND item_id = p_item_id;
+
+    IF v_count > 0 THEN
+        UPDATE contenir_items SET quantite = quantite + 1 
+        WHERE commande_id = v_commande_id AND item_id = p_item_id;
+    ELSE
+        INSERT INTO contenir_items (commande_id, item_id, quantite)
+        VALUES (v_commande_id, p_item_id, 1);
+    END IF;
+
+    -- le trigger recalcule le prix
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION ajouter_formule_complete(
+    p_client_id INT,
+    p_restaurant_id INT,
+    p_formule_id INT,
+    p_items_ids INT[]
+) RETURNS BOOLEAN AS $$
+DECLARE
+    v_commande_id INT;
+    v_contenir_formule_id INT;
+BEGIN
+    v_commande_id := obtenir_ou_creer_commande(p_client_id, p_restaurant_id);
+
+    INSERT INTO contenir_formules (commande_id, formule_id)
+    VALUES (v_commande_id, p_formule_id)
+    RETURNING id INTO v_contenir_formule_id; 
+
+    INSERT INTO details_commande_formule (contenir_formule_id, item_id)
+    SELECT v_contenir_formule_id, unnest(p_items_ids);
+
+    -- Le trigger s'occupe du prix
+
+    RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
 
 -- TRIGGERS
 
-CREATE TRIGGER trg_update_prix_commande
+-- Trigger sur les items 
+DROP TRIGGER IF EXISTS trg_update_prix_items ON contenir_items;
+CREATE TRIGGER trg_update_prix_items
 AFTER INSERT OR UPDATE OR DELETE ON contenir_items
+FOR EACH ROW
+EXECUTE FUNCTION update_prix_commande_func();
+
+-- Trigger sur les formules
+DROP TRIGGER IF EXISTS trg_update_prix_formules ON contenir_formules;
+CREATE TRIGGER trg_update_prix_formules
+AFTER INSERT OR UPDATE OR DELETE ON contenir_formules
 FOR EACH ROW
 EXECUTE FUNCTION update_prix_commande_func();

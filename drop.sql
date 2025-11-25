@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS avoir_conditions_formules CASCADE;
 DROP TABLE IF EXISTS commandes CASCADE;
 DROP TABLE IF EXISTS contenir_items CASCADE;
 DROP TABLE IF EXISTS contenir_formules CASCADE;
+DROP TABLE IF EXISTS details_commande_formule CASCADE;
 DROP TABLE IF EXISTS remises CASCADE;
 DROP TABLE IF EXISTS item_offert CASCADE;
 DROP TABLE IF EXISTS pourcentage_remise CASCADE;
