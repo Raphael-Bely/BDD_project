@@ -79,17 +79,75 @@
         }
         .not-connected-msg { font-size: 0.7em; color: red; display: block;}
 
+        /* Ajoutez ceci dans <style> */
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .btn-formules {
+            background-color: #e67e22; /* Orange pour rappeler les formules */
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: background 0.3s;
+            display: inline-block;
+        }
+
+        .btn-formules:hover {
+            background-color: #d35400;
+        }
+
+        .btn-retour {
+            text-decoration: none;
+            color: #555;
+            font-weight: bold;
+        }
+        .btn-retour:hover { text-decoration: underline; }
+
     </style>
 </head>
 <body>
+    <body>
     <?php
-        // Récupération de l'ID client pour savoir si on active les boutons
+        // Récupération de l'ID pour les boutons (si ce n'est pas déjà fait plus haut)
         if (isset($_SESSION['client_id'])) {
             $client_id = $_SESSION['client_id'];
         } else {
             $client_id = null; 
         }
+
+        // On récupère l'ID du restaurant pour le lien
+        // (On suppose que $restaurant_id est disponible via le contrôleur, 
+        // sinon on le prend dans $restaurant_info)
+        $current_resto_id = isset($restaurant_id) ? $restaurant_id : (isset($_GET['id']) ? $_GET['id'] : 0);
     ?>
+
+    <?php
+        if ($restaurant_info) {
+            echo "<h1> Menu de " . htmlspecialchars($restaurant_info['nom']) ."</h1>"; 
+        } else {
+            echo "<h1> Restaurant non trouvé </h1>";
+        }
+    ?>
+
+    <div class="header-actions">
+        <a href="index.php" class="btn-retour">← Retour à la liste des restaurants</a>
+        
+        <a href="formules.php?id=<?= $current_resto_id ?>" class="btn-formules">
+            🍱 Voir les Formules
+        </a>
+    </div>
+
+    <div class="menu-container">
 
     <?php
         if ($restaurant_info) {
