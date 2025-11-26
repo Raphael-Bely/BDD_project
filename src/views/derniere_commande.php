@@ -5,6 +5,8 @@
     <title>Mes Commandes</title>
     <style>
        /* Ton CSS d'origine... */
+       .sub-table-header { background-color: #e67e22; color: white; } /* Orange pour distinguer */
+       .composition-text { font-size: 0.9em; color: #666; font-style: italic; }
     </style>
 </head>
 <body>
@@ -12,93 +14,109 @@
     <a href="index.php" class="btn-retour">← Retour</a>
 
     <?php
-    // 1. On vérifie simplement si le tableau est rempli
     if (!empty($historiqueCommandes)) {
 
-        // 2. On boucle sur chaque commande du tableau
         foreach ($historiqueCommandes as $commande) {
             
-            // On récupère les variables pour l'affichage général
-            // (Comme tu faisais avec extract, mais depuis le tableau)
             $commande_id = $commande['commande_id'];
-            $prix_total = $commande['prix_total_remise'];
-            $dateCmd = new DateTime($commande['date_commande']);
+            // Note: Assure-toi que ton SQL principal récupère bien 'date_commande' et 'prix_total_remise'
+            $dateCmd = new DateTime($commande['date_commande']); 
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
             echo "<div class='commande-card'>";
                 
-                // --- HEADER DE LA CARTE ---
                 echo "<div class='commande-header'>";
                     echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
                 echo "</div>";
 
                 echo "<div class='commande-info'>";
-                    echo "<p><span class='label'>Date de commande :</span> " . $dateAffichee . "</p>";
+                    echo "<p><span class='label'>Date :</span> " . $dateAffichee . "</p>";
                     
-                    // Gestion de l'heure de retrait
                     if (!empty($commande['heure_retrait'])) {
                         $retraitCmd = new DateTime($commande['heure_retrait']);
-                        echo "<p><span class='label'>Heure de retrait prévue :</span> " . $retraitCmd->format('H:i') . "</p>";
-                    } else {
-                        echo "<p><span class='label'>Retrait :</span> <span style='color:#777; font-style:italic;'>Non spécifié</span></p>";
+                        echo "<p><span class='label'>Retrait :</span> " . $retraitCmd->format('H:i') . "</p>";
                     }
 
-                    echo "<h2>📦 Articles de la commande</h2>";
-                    
-                    // --- LISTE DES ARTICLES ---
-                    // Ici, au lieu de refaire une requête SQL, on lit le sous-tableau 'liste_articles'
-                    // que le contrôleur a déjà préparé pour nous.
-                    
-                    if (!empty($commande['liste_articles'])) {
-                        $totalCalcul = 0;
+                    // ==========================================
+                    // 1. AFFICHAGE DES FORMULES
+                    // ==========================================
+                    if (!empty($commande['liste_formules'])) {
+                        echo "<h3>🍱 Formules et Menus</h3>";
                         
-                        // Tableau HTML (Copie conforme de ton code)
-                        echo "<table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>";
+                        echo "<table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>";
+                        echo "<thead><tr class='sub-table-header'>
+                                <th style='padding: 8px; text-align: left;'>Menu</th>
+                                <th style='padding: 8px; text-align: left;'>Composition</th>
+                                <th style='padding: 8px; text-align: right;'>Prix</th>
+                              </tr></thead><tbody>";
+
+                        foreach ($commande['liste_formules'] as $formule) {
+                            echo "<tr style='border-bottom: 1px solid #ecf0f1;'>";
+                            
+                            // Nom de la formule
+                            echo "<td style='padding: 10px; vertical-align: top;'><strong>" . htmlspecialchars($formule['nom']) . "</strong></td>";
+                            
+                            // Liste des items (Entrée, Plat...) regroupés
+                            echo "<td style='padding: 10px;'>";
+                            if (!empty($formule['items'])) {
+                                echo "<span class='composition-text'>" . htmlspecialchars(implode(', ', $formule['items'])) . "</span>";
+                            }
+                            echo "</td>";
+
+                            // Prix
+                            echo "<td style='padding: 10px; text-align: right; vertical-align: top; font-weight: bold;'>" . number_format($formule['prix'], 2, ',', ' ') . " €</td>";
+                            
+                            echo "</tr>";
+                        }
+                        echo "</tbody></table>";
+                    }
+
+                    // ==========================================
+                    // 2. AFFICHAGE DES ARTICLES À LA CARTE
+                    // ==========================================
+                    if (!empty($commande['liste_articles'])) {
+                        echo "<h3>📦 Articles à la carte</h3>";
+                        
+                        echo "<table style='width: 100%; border-collapse: collapse; margin-top: 5px;'>";
                         echo "<thead><tr style='background-color: #34495e; color: white;'>
                                 <th style='padding: 10px; text-align: left;'>Article</th>
                                 <th style='padding: 10px; text-align: left;'>Prix unitaire</th>
-                                <th style='padding: 10px; text-align: center;'>Quantité</th>
+                                <th style='padding: 10px; text-align: center;'>Qté</th>
                                 <th style='padding: 10px; text-align: right;'>Sous-total</th>
                               </tr></thead><tbody>";
                         
-                        // Boucle sur les articles
                         foreach ($commande['liste_articles'] as $item) {
                             $nom = htmlspecialchars($item['nom']);
                             $prix = $item['prix'];
-                            $quantite = $item['quantite']; // Attention: vérifie si c'est 'quantite' ou 'c.quantite' selon ton SQL
+                            $quantite = $item['quantite'];
                             $sousTotal = $prix * $quantite;
-                            $totalCalcul += $sousTotal;
                             
                             echo "<tr style='border-bottom: 1px solid #ecf0f1;'>";
-                            echo "<td style='padding: 10px;'><strong>{$nom}</strong></td>";
+                            echo "<td style='padding: 10px;'>{$nom}</td>";
                             echo "<td style='padding: 10px;'>" . number_format($prix, 2, ',', ' ') . " €</td>";
                             echo "<td style='padding: 10px; text-align: center;'>{$quantite}</td>";
-                            echo "<td style='padding: 10px; text-align: right; font-weight: bold; color: #e74c3c;'>" . number_format($sousTotal, 2, ',', ' ') . " €</td>";
+                            echo "<td style='padding: 10px; text-align: right;'>" . number_format($sousTotal, 2, ',', ' ') . " €</td>";
                             echo "</tr>";
                         }
-                        
-                        echo "<tr style='background-color: #ecf0f1; font-weight: bold; font-size: 1.1em;'>";
-                        echo "<td colspan='3' style='padding: 10px;'>TOTAL</td>";
-                        echo "<td style='padding: 10px; text-align: right; color: #27ae60; font-size: 1.2em;'>" . number_format($totalCalcul, 2, ',', ' ') . " €</td>";
-                        echo "</tr></tbody></table>";
-
-                    } else {
-                        echo "<p style='color: #7f8c8d; font-style: italic;'>Aucun article trouvé pour cette commande.</p>";
+                        echo "</tbody></table>";
                     }
 
-                    // --- BOUTON ANNULER ---
-                    echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr ?');\">";
+                    // TOTAL GÉNÉRAL (Issu de la table commande)
+                    echo "<div class='prix-total' style='margin-top:20px; text-align:right; font-size:1.4em; color:#27ae60; font-weight:bold;'>";
+                    echo "TOTAL COMMANDE : " . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €";
+                    echo "</div>";
+
+                    // Formulaire Annulation
+                    echo "<form action='annuler_commande.php' method='POST' style='margin-top:20px;' onsubmit=\"return confirm('Êtes-vous sûr ?');\">";
                         echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
                         echo "<button type='submit' class='btn-annuler'>🗑️ Annuler la commande</button>";
                     echo "</form>";
 
-                echo "</div>"; // Fin commande-info
-            echo "</div>"; // Fin commande-card
+                echo "</div>"; 
+            echo "</div>"; 
         }
     } else {
-        echo "<div class='commande-card'>";
-        echo "<p class='alert'>Aucune commande trouvée pour ce client.</p>";
-        echo "</div>";
+        echo "<div class='commande-card'><p class='alert'>Aucune commande trouvée.</p></div>";
     }
     ?>
 

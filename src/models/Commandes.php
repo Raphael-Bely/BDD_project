@@ -42,6 +42,16 @@ class Commande {
         return $stmt;
     }
 
+    public function afficherFormulesCommande($commande_id) {
+        $query = Query::loadQuery('sql_requests/getAllFormulesCommandes.sql');
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $commande_id);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+
     public function ajouterAuPanier($client_id, $resto_id, $item_id) {
         $query = "SELECT ajouter_au_panier(?, ?, ?)";
         

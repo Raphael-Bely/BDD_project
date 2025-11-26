@@ -17,9 +17,9 @@ else {
 
 $database = new Database();
 $db = $database->getConnection();
-$commandeModel = new Commande($db);
+$commande = new Commande($db);
 
-$stmt = $commandeModel->getCurrentCommande($client_id);
+$stmt = $commande->getCurrentCommande($client_id);
 
 $commandeInfo = null;
 $stmt_items = null;
@@ -29,10 +29,34 @@ if ($stmt->rowCount() > 0) {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $id_cmd = $row['commande_id'];
         
-        $stmt_items = $commandeModel->afficherItemCommande($id_cmd);
-        $articles = $stmt_items->fetchAll(PDO::FETCH_ASSOC); // On récupère tous les articles en tableau
+        $stmt_items = $commande->afficherItemCommande($id_cmd);
+        $row['liste_articles'] = $stmt_items->fetchAll(PDO::FETCH_ASSOC); // On récupère tous les articles en tableau
+
+        $stmt_formules = $commande->afficherFormulesCommande($id_cmd);
+        $raw_formules['liste_formules'] = $stmt_formules->fetchAll(PDO::FETCH_ASSOC);
+
+        // il faut regrouper les lignes avec la formules qui leur correpond :
+        $formules_structurees = [];
+
+        if ($raw_formules) {
+            foreach($raw_formules as $ligne) {
+                $id_unique = $ligne['instance_id'];
+
+                if (!isset($formules_structurees[$id_unique])) {
+                    $formules_structurees[$id_unique] = [
+                        'nom' => $ligne['nom_formule'],
+                        'prix' => $ligne['prix'],
+                        'item' => []
+                    ];
+                }
+
+                $formules_structurees[$id_unique]['item'][] = $ligne['nom_item'];
+            }
+
+            $row['liste_formules'] = $formules_structurees;
+        }
         
-        $row['liste_articles'] = $articles;
+        
         
         $historiqueCommandes[] = $row;
     }
