@@ -25,42 +25,60 @@ $commandeInfo = null;
 $stmt_items = null;
 
 // On vérifie si on a trouvé une commande
+// ... (le début de votre fichier reste pareil)
+
 if ($stmt->rowCount() > 0) {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $id_cmd = $row['commande_id'];
         
+        // --- 1. Gestion des Articles ---
         $stmt_items = $commande->afficherItemCommande($id_cmd);
-        $row['liste_articles'] = $stmt_items->fetchAll(PDO::FETCH_ASSOC); // On récupère tous les articles en tableau
+        $row['liste_articles'] = $stmt_items->fetchAll(PDO::FETCH_ASSOC);
 
+        // --- 2. Gestion des Formules ---
         $stmt_formules = $commande->afficherFormulesCommande($id_cmd);
-        $raw_formules['liste_formules'] = $stmt_formules->fetchAll(PDO::FETCH_ASSOC);
-
-        // il faut regrouper les lignes avec la formules qui leur correpond :
-        $formules_structurees = [];
-
-        if ($raw_formules) {
+        $raw_formules = $stmt_formules->fetchAll(PDO::FETCH_ASSOC);
+        
+        // INITIALISATION OBLIGATOIRE (Même si vide)
+        $formules_structurees = []; 
+        
+        // On ne rentre ici que s'il y a des résultats
+        if (!empty($raw_formules)) {
             foreach($raw_formules as $ligne) {
-                $id_unique = $ligne['instance_id'];
+                
+                // BLINDAGE ICI : On cherche 'instance_id', sinon on prend 'id', sinon 0
+                // Cela empêche l'erreur "Undefined index" même si le SQL est vieux
+                $id_unique = $ligne['instance_id'] ?? $ligne['id'] ?? 0;
+                $nom_form  = $ligne['nom_formule'] ?? $ligne['nom'] ?? 'Nom Inconnu';
+                $prix_form = $ligne['prix'] ?? 0;
+                $nom_item  = $ligne['nom_item'] ?? $ligne['nom'] ?? ''; // Attention collision de noms possible
+
+                // Si l'ID est invalide (0), on saute cette ligne
+                if ($id_unique === 0) continue;
 
                 if (!isset($formules_structurees[$id_unique])) {
                     $formules_structurees[$id_unique] = [
-                        'nom' => $ligne['nom_formule'],
-                        'prix' => $ligne['prix'],
-                        'item' => []
+                        'nom' => $nom_form,
+                        'prix' => $prix_form,
+                        'items' => [] 
                     ];
                 }
-
-                $formules_structurees[$id_unique]['item'][] = $ligne['nom_item'];
+                
+                // On ajoute l'item seulement s'il a un nom
+                if (!empty($nom_item)) {
+                    $formules_structurees[$id_unique]['items'][] = $nom_item;
+                }
             }
-
-            $row['liste_formules'] = $formules_structurees;
         }
         
-        
+        // ASSIGNATION SYSTÉMATIQUE (Vide ou rempli)
+        // Cela empêche l'erreur dans la VUE (derniere_commande.php)
+        $row['liste_formules'] = $formules_structurees;
         
         $historiqueCommandes[] = $row;
     }
 }
+
 
 include 'views/derniere_commande.php';
 ?>

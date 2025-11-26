@@ -41,7 +41,7 @@
                     // 1. AFFICHAGE DES FORMULES
                     // ==========================================
                     if (!empty($commande['liste_formules'])) {
-                        echo "<h3>🍱 Formules et Menus</h3>";
+                        echo "<h3>🍱 Formules </h3>";
                         
                         echo "<table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>";
                         echo "<thead><tr class='sub-table-header'>
