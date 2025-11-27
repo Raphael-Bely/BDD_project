@@ -1,2 +1,10 @@
 .env
 *.log
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+*.out
+*.bbl
+*.pdf

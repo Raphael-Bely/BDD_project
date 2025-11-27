@@ -7,6 +7,7 @@ session_start();
 
 require_once './config/Database.php';
 require_once './models/Commandes.php';
+require_once './models/Fidelite.php';
 
 if (isset($_SESSION['client_id']) && is_numeric($_SESSION['client_id'])) {
     $client_id = $_SESSION['client_id'];
@@ -18,22 +19,24 @@ else {
 $database = new Database();
 $db = $database->getConnection();
 $commande = new Commande($db);
-
+$fidelite = new Fidelite($db);
 $stmt = $commande->getCurrentCommande($client_id);
 
-$commandeInfo = null;
 $stmt_items = null;
 
-// On vérifie si on a trouvé une commande
-// ... (le début de votre fichier reste pareil)
 
 if ($stmt->rowCount() > 0) {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $id_cmd = $row['commande_id'];
         
+        // --- AJOUT FIDÉLITÉ ---
+        $row['solde_points_actuel'] = $fidelite->getSolde($client_id, $row['restaurant_id']);
+        $row['points_gagnes_commande'] = floor($row['prix_total_remise']);
+
         // --- 1. Gestion des Articles ---
         $stmt_items = $commande->afficherItemCommande($id_cmd);
         $row['liste_articles'] = $stmt_items->fetchAll(PDO::FETCH_ASSOC);
+        $restaurant_commande = $row['nom_restaurant'];
 
         // --- 2. Gestion des Formules ---
         $stmt_formules = $commande->afficherFormulesCommande($id_cmd);
