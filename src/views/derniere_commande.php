@@ -41,7 +41,6 @@
             max-width: 800px;
             margin: 0 auto 30px auto;
             overflow: hidden;
-            /* Pour que le header ne dépasse pas */
             border: 1px solid #e5e7eb;
         }
 
@@ -86,13 +85,10 @@
             color: #d97706;
         }
 
-        /* Orange */
         h3.titre-article {
             border-color: #3b82f6;
             color: #2563eb;
         }
-
-        /* Bleu */
 
         /* --- TABLEAUX MODERNES --- */
         .modern-table {
@@ -122,21 +118,10 @@
             border-bottom: none;
         }
 
-        /* Colonnes spécifiques */
-        .col-right {
-            text-align: right;
-        }
+        .col-right { text-align: right; }
+        .col-center { text-align: center; }
+        .font-bold { font-weight: 600; color: #111827; }
 
-        .col-center {
-            text-align: center;
-        }
-
-        .font-bold {
-            font-weight: 600;
-            color: #111827;
-        }
-
-        /* Composition des formules */
         .composition-tag {
             display: inline-block;
             font-size: 0.85rem;
@@ -145,6 +130,28 @@
             padding: 2px 8px;
             border-radius: 4px;
             margin-top: 4px;
+        }
+
+        /* --- SECTION FIDELITE --- */
+        .loyalty-section {
+            background-color: #f0fdf4; /* Vert très clair */
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .loyalty-info h4 { margin: 0; color: #15803d; font-size: 1.1rem; }
+        .loyalty-info p { margin: 5px 0 0 0; color: #166534; font-size: 0.9rem; }
+        .loyalty-badge {
+            background-color: #16a34a;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
 
         /* --- TOTAL --- */
@@ -167,19 +174,22 @@
             font-size: 1.8rem;
             font-weight: 700;
             color: #10b981;
-            /* Vert success */
         }
 
-        /* --- BOUTON ANNULER --- */
+        /* --- FOOTER ACTIONS --- */
         .actions-footer {
-            margin-top: 20px;
-            text-align: right;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
         }
 
         .btn-annuler {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
+            background-color: white;
+            color: #ef4444;
+            border: 1px solid #ef4444;
             padding: 10px 20px;
             border-radius: 8px;
             font-weight: 600;
@@ -189,27 +199,25 @@
         }
 
         .btn-annuler:hover {
-            background-color: #fca5a5;
-            color: #7f1d1d;
-            border-color: #fca5a5;
+            background-color: #fee2e2;
         }
 
         .btn-confirmer {
-            background-color: rgb(4, 185, 58);
-            color: rgb(255, 255, 255);
-            border: 1px solidrgb(4, 185, 58);
-            padding: 10px 20px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 25px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
+            font-size: 1rem;
             transition: all 0.2s;
-            font-size: 0.9rem;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
         }
 
         .btn-confirmer:hover {
-            background-color: rgb(0, 131, 28);
-            color: rgb(148, 204, 160);
-            border-color: rgb(0, 131, 28);
+            background-color: #059669;
+            transform: translateY(-1px);
         }
 
         /* --- EMPTY STATE --- */
@@ -220,45 +228,20 @@
             background: white;
             border-radius: 16px;
             border: 1px solid #e5e7eb;
-
-            /* Ton CSS d'origine... */
-            .sub-table-header {
-                background-color: #e67e22;
-                color: white;
-            }
-
-            /* Orange pour distinguer */
-            .composition-text {
-                font-size: 0.9em;
-                color: #666;
-                font-style: italic;
-            }
-
-            .header-nav {
-                margin-bottom: 20px;
-                padding: 10px;
-                background-color: #f8f9fa;
-                border-radius: 5px;
-            }
-
-            .header-nav a {
-                margin-right: 15px;
-                text-decoration: none;
-                color: #3498db;
-            }
-
-            .header-nav a:hover {
-                text-decoration: underline;
-            }
+        }
+        .header-nav {
+            margin-bottom: 20px;
+            padding: 10px;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="header-nav">
-        <a href="index.php" class="btn-retour">← Retour</a>
+        <a href="index.php" class="btn-retour">← Retour aux restaurants</a>
         <?php if (isset($_SESSION['client_id'])): ?>
-            <a href="historique.php">📋 Historique</a>
+            <a href="historique.php" style="margin-left: 20px; text-decoration:none; color:#3b82f6; font-weight:600;">📋 Historique</a>
         <?php endif; ?>
     </div>
 
@@ -271,52 +254,52 @@
             $dateCmd = new DateTime($commande['date_commande']);
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
-            $points_gagnes = isset($commande['points_gagnes_commande']) ? $commande['points_gagnes_commande'] : 0;
-            $solde_points = isset($commande['solde_points_actuel']) ? $commande['solde_points_actuel'] : 0;
-
-            // --- DÉBUT CARTE ---
+            $points_gagnes = isset($commande['points_gagnes_commande']) ? intval($commande['points_gagnes_commande']) : 0;
+            $solde_actuel = isset($commande['solde_points_actuel']) ? intval($commande['solde_points_actuel']) : 0;
+    
             echo "<div class='commande-card'>";
-                
-                // --- HEADER ---
-                echo "<div class='commande-header'>";
-                    echo "<div>";
-                        echo "<div style='color: #e67e22; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 4px;'>" . htmlspecialchars($restaurant_commande) . "</div>";
-                        
-                        echo "<h2 style='margin: 0;'>Commande #" . htmlspecialchars($commande_id) . "</h2>";
-                    echo "</div>";
 
-                    echo "<div class='commande-meta'>";
-                        echo "📅 " . $dateAffichee;
-                        if (!empty($commande['heure_retrait'])) {
-                            $retraitCmd = new DateTime($commande['heure_retrait']);
-                            echo " &nbsp;|&nbsp; ⏱️ Retrait : " . $retraitCmd->format('H:i');
-                        }
-                    echo "</div>";
-                echo "</div>";
+          
+            echo "<div class='commande-header'>";
+            echo "<div>";
+    
+            if (isset($commande['restaurant_nom'])) {
+                echo "<div style='color: #e67e22; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 4px;'>" . htmlspecialchars($commande['restaurant_nom']) . "</div>";
+            }
+            echo "<h2 style='margin: 0;'>Commande #" . htmlspecialchars($commande_id) . "</h2>";
+            echo "</div>";
 
-                // --- CORPS ---
-                echo "<div class='commande-body'>";
-                    
-                    // 1. FORMULES
-                    if (!empty($commande['liste_formules'])) {
-                        echo "<h3 class='titre-formule'>🍱 Formules</h3>";
-                        
-                        echo "<table class='modern-table'>";
-                        echo "<thead>
-                                <tr>
-                                    <th>Menu</th>
-                                    <th>Détail de la composition</th>
-                                    <th class='col-right'>Prix</th>
-                                </tr>
-                              </thead>
-                              <tbody>";
+            echo "<div class='commande-meta'>";
+            echo "📅 " . $dateAffichee;
+            if (!empty($commande['heure_retrait'])) {
+                $retraitCmd = new DateTime($commande['heure_retrait']);
+                echo " &nbsp;|&nbsp; ⏱️ Retrait : " . $retraitCmd->format('H:i');
+            }
+            echo "</div>";
+            echo "</div>";
+
+            // --- CORPS ---
+            echo "<div class='commande-body'>";
+
+            // 1. FORMULES
+            if (!empty($commande['liste_formules'])) {
+                echo "<h3 class='titre-formule'>🍱 Menus & Formules</h3>";
+
+                echo "<table class='modern-table'>";
+                echo "<thead>
+                        <tr>
+                            <th>Menu</th>
+                            <th>Détail de la composition</th>
+                            <th class='col-right'>Prix</th>
+                        </tr>
+                      </thead>
+                      <tbody>";
 
                 foreach ($commande['liste_formules'] as $formule) {
                     echo "<tr>";
                     echo "<td class='font-bold'>" . htmlspecialchars($formule['nom']) . "</td>";
                     echo "<td>";
                     if (!empty($formule['items'])) {
-                        // Petit style badge pour la composition
                         echo "<span class='composition-tag'>" . htmlspecialchars(implode(' + ', $formule['items'])) . "</span>";
                     }
                     echo "</td>";
@@ -325,7 +308,6 @@
                 }
                 echo "</tbody></table>";
             }
-            echo "</td>";
 
             // 2. ARTICLES À LA CARTE
             if (!empty($commande['liste_articles'])) {
@@ -333,14 +315,14 @@
 
                 echo "<table class='modern-table'>";
                 echo "<thead>
-                                <tr>
-                                    <th>Article</th>
-                                    <th class='col-right'>Prix Unit.</th>
-                                    <th class='col-center'>Qté</th>
-                                    <th class='col-right'>Total</th>
-                                </tr>
-                              </thead>
-                              <tbody>";
+                        <tr>
+                            <th>Article</th>
+                            <th class='col-right'>Prix Unit.</th>
+                            <th class='col-center'>Qté</th>
+                            <th class='col-right'>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>";
 
                 foreach ($commande['liste_articles'] as $item) {
                     $nom = htmlspecialchars($item['nom']);
@@ -358,7 +340,7 @@
                 echo "</tbody></table>";
             }
 
-            // 3. FIDÉLITÉ
+            // 3. FIDÉLITÉ (AFFICHAGE SÉCURISÉ)
             echo "<div class='loyalty-section'>";
             echo "<div class='loyalty-info'>";
             echo "<h4>🎁 Programme Fidélité</h4>";
@@ -368,30 +350,33 @@
             echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
             echo "</div>";
 
-
             // 4. TOTAL
             echo "<div class='total-section'>";
             echo "<span class='total-label'>Total payé :</span>";
             echo "<span class='total-price'>" . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €</span>";
             echo "</div>";
 
-            // 5. ACTION (Annuler)
+            // 5. ACTIONS (FOOTER)
             echo "<div class='actions-footer'>";
+            
+                // BOUTON ANNULER
                 echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
-                echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
-                echo "<button type='submit' class='btn-annuler'>🗑️ Annuler cette commande</button>";
+                    echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                    echo "<button type='submit' class='btn-annuler'>🗑️ Annuler</button>";
                 echo "</form>";
-            echo "</div>";
 
-            // 5. ACTION (Confirmer)
-            echo "<div class='actions-footer'>";
-            echo "<form action='confirmer_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir confirmer cette commande ?');\">";
-            echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
-            echo "<input type='hidden' name='restaurant_id' value='" . $commande['restaurant_id'] . "'>";
-            echo "<input type='hidden' name='total' value='" . $commande['prix_total_remise'] . "'>";
-            echo "<button type='submit' class='btn-confirmer'>Valider et Payer</button>";
-            echo "</form>";
-            echo "</div>";
+                // BOUTON VALIDER (Redirige vers valider_panier.php avec les infos cachées)
+                echo "<form action='valider_panier.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir confirmer et payer cette commande ?');\">";
+                    echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                    // Champs cachés importants pour la fidélité
+                    echo "<input type='hidden' name='restaurant_id' value='" . (isset($commande['restaurant_id']) ? $commande['restaurant_id'] : '') . "'>";
+                    echo "<input type='hidden' name='total' value='" . $commande['prix_total_remise'] . "'>";
+                    
+                    echo "<button type='submit' class='btn-confirmer'>Valider et Payer</button>";
+                echo "</form>";
+
+            echo "</div>"; // Fin actions-footer
+
             echo "</div>"; // Fin commande-body
             echo "</div>"; // Fin commande-card
         }

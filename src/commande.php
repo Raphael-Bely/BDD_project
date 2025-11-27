@@ -19,13 +19,11 @@ else {
 $database = new Database();
 $db = $database->getConnection();
 $commande = new Commande($db);
-
+$fidelite = new Fidelite($db);
 $stmt = $commande->getCurrentCommande($client_id);
 
 $stmt_items = null;
 
-// On vérifie si on a trouvé une commande
-// ... (le début de votre fichier reste pareil)
 
 if ($stmt->rowCount() > 0) {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
