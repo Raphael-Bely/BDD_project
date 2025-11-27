@@ -107,6 +107,25 @@ class Commande
 
         return $stmt;
     }
-}
 
-?>
+    public function getCommandesEnCours($client_id)
+    {
+        $query = Query::loadQuery('sql_requests/getCommandesEnCours.sql');
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':client_id', $client_id);
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    public function marquerCommeRecue($commande_id)
+    {
+        $query = "UPDATE commandes SET etat = 'acheve' WHERE commande_id = :commande_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':commande_id', $commande_id);
+
+        return $stmt->execute();
+    }
+} ?>
