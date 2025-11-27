@@ -4,6 +4,7 @@ Ce fichier explique rapidement les commandes pour configurer et se connecter à 
 
 ## Prérequis
 - Installer PostgreSQL sur la machine.
+- Installer Post
 - Disposer d'un utilisateur PostgreSQL existant (ou disposer des droits pour en créer un).
 - Créer un fichier `.env` contenant les variables d'environnement (voir section suivante).
 
