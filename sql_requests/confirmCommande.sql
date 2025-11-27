@@ -1,3 +1,3 @@
 UPDATE commandes
-SET est_acheve = TRUE
+SET etat = 'en_livraison'
 WHERE commande_id = ?;

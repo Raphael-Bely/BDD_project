@@ -144,13 +144,16 @@ CREATE TABLE avoir_conditions_formules
     PRIMARY KEY (formule_id, condition_formule_id)
 );
 
+-- Type ENUM pour les états de commande
+CREATE TYPE etat_commande AS ENUM ('en_commande', 'en_livraison', 'acheve');
+
 CREATE TABLE commandes
 (
     commande_id SERIAL PRIMARY KEY,
     date_commande TIMESTAMP NOT NULL,
     heure_retrait TIMESTAMP,
     prix_total_remise DECIMAL(10, 2) DEFAULT 0,
-    est_acheve BOOLEAN DEFAULT FALSE,
+    etat etat_commande DEFAULT 'en_commande' NOT NULL,
     client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
     restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
 );
@@ -217,7 +220,7 @@ BEGIN
     FROM commandes 
     WHERE client_id = p_client_id 
       AND restaurant_id = p_restaurant_id 
-      AND est_acheve = FALSE
+      AND etat = 'en_commande'
     LIMIT 1;
 
     IF v_commande_id IS NULL THEN

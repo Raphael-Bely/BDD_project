@@ -101,12 +101,22 @@
 
 <div class="header-bar">
     <?php if (isset($_SESSION['client_id'])): ?>
-        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !</p>
+        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong>
+            <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+                <span
+                    style="background-color: #f39c12; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 5px;">Mode
+                    Invité</span>
+            <?php endif; ?>
+            !
+        </p>
 
         <div>
             <a href="index.php">Restaurants</a>
             <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
-            <a href="historique.php">📋 Historique</a>
+            <a href="suivi.php">📦 Suivi</a>
+            <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                <a href="historique.php">📋 Historique</a>
+            <?php endif; ?>
             <a href="logout.php" style="color: #ffcccc;">Se déconnecter</a>
         </div>
     <?php endif; ?>
@@ -120,8 +130,9 @@ if ($stmt->rowCount() > 0) {
         extract($row);
 
         // Déterminer l'état et la classe CSS
-        $etat = $est_acheve ? 'Terminée' : 'En cours';
-        $etat_class = $est_acheve ? 'etat-terminee' : 'etat-en-cours';
+        // La colonne etat contient maintenant: 'en_commande', 'en_livraison', 'acheve'
+        $etat_affiche = ($etat === 'acheve') ? 'Terminée' : 'En cours';
+        $etat_class = ($etat === 'acheve') ? 'etat-terminee' : 'etat-en-cours';
 
         // Formater la date
         $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
@@ -133,7 +144,7 @@ if ($stmt->rowCount() > 0) {
         echo "<h3>{$restaurant_nom}</h3>";
         echo "<p class='commande-date'>Commandé le {$date_formatee}</p>";
         echo "</div>";
-        echo "<span class='commande-etat {$etat_class}>" . ucfirst($etat) . "</span>";
+        echo "<span class='commande-etat {$etat_class}>" . ucfirst($etat_affiche) . "</span>";
         echo "</div>";
 
         echo "<div class='commande-details'>";
