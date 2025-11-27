@@ -276,30 +276,33 @@
 
             // --- DÉBUT CARTE ---
             echo "<div class='commande-card'>";
+                
+                // --- HEADER ---
+                echo "<div class='commande-header'>";
+                    echo "<div>";
+                        echo "<div style='color: #e67e22; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 4px;'>" . htmlspecialchars($restaurant_commande) . "</div>";
+                        
+                        echo "<h2 style='margin: 0;'>Commande #" . htmlspecialchars($commande_id) . "</h2>";
+                    echo "</div>";
 
-            // --- HEADER ---
-            echo "<div class='commande-header'>";
-            echo "<div>";
-            echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
-            echo "</div>";
-            echo "<div class='commande-meta'>";
-            echo "📅 " . $dateAffichee;
-            if (!empty($commande['heure_retrait'])) {
-                $retraitCmd = new DateTime($commande['heure_retrait']);
-                echo " &nbsp;|&nbsp; ⏱️ Retrait : " . $retraitCmd->format('H:i');
-            }
-            echo "</div>";
-            echo "</div>";
+                    echo "<div class='commande-meta'>";
+                        echo "📅 " . $dateAffichee;
+                        if (!empty($commande['heure_retrait'])) {
+                            $retraitCmd = new DateTime($commande['heure_retrait']);
+                            echo " &nbsp;|&nbsp; ⏱️ Retrait : " . $retraitCmd->format('H:i');
+                        }
+                    echo "</div>";
+                echo "</div>";
 
-            // --- CORPS ---
-            echo "<div class='commande-body'>";
-
-            // 1. FORMULES
-            if (!empty($commande['liste_formules'])) {
-                echo "<h3 class='titre-formule'>🍱 Menus & Formules</h3>";
-
-                echo "<table class='modern-table'>";
-                echo "<thead>
+                // --- CORPS ---
+                echo "<div class='commande-body'>";
+                    
+                    // 1. FORMULES
+                    if (!empty($commande['liste_formules'])) {
+                        echo "<h3 class='titre-formule'>🍱 Formules</h3>";
+                        
+                        echo "<table class='modern-table'>";
+                        echo "<thead>
                                 <tr>
                                     <th>Menu</th>
                                     <th>Détail de la composition</th>
@@ -374,13 +377,12 @@
 
             // 5. ACTION (Annuler)
             echo "<div class='actions-footer'>";
-            echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
-            echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
-            echo "<button type='submit' class='btn-annuler'>🗑️ Annuler cette commande</button>";
-            echo "</form>";
+                echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
+                echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                echo "<button type='submit' class='btn-annuler'>🗑️ Annuler cette commande</button>";
+                echo "</form>";
             echo "</div>";
 
-            echo "</div>"; // Fin commande-body
             // 5. ACTION (Confirmer)
             echo "<div class='actions-footer'>";
             echo "<form action='confirmer_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir confirmer cette commande ?');\">";

@@ -9,32 +9,52 @@ class Restaurant {
     }
 
     public function getAllRestaurants() {
-
         $query = Query::loadQuery('sql_requests/getAllRestaurants.sql');
         $stmt = $this->conn->prepare($query);
-
         $stmt->execute();
-
         return $stmt; 
     }
 
     public function getByID($restaurant_id) {
         $query = Query::loadQuery('sql_requests/getRestaurantById.sql');
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1,$restaurant_id);
+        $stmt->bindParam(1, $restaurant_id); // Utilise le placeholder ?
         $stmt->execute();
-
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row;
     }
 
     public function getFormules($restaurant_id) {
         $query = Query::loadQuery('sql_requests/getFormulesByRestaurantId.sql');
-
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1,$restaurant_id);
+        $stmt->bindParam(1, $restaurant_id);
         $stmt->execute();
+        return $stmt;
+    }
 
+    public function getAllCategories() {
+        $query = Query::loadQuery('sql_requests/getAllCategories.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getCategoriesById($cat_id) {
+        $query = Query::loadQuery('sql_requests/getCategorieById.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1,$cat_id);
+
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function getByCategory($category_id) {
+        $query = Query::loadQuery('sql_requests/getRestaurantsByCategory.sql');
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(1, $category_id);
+        
+        $stmt->execute();
         return $stmt;
     }
 }

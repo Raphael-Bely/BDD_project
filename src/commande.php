@@ -22,7 +22,6 @@ $commande = new Commande($db);
 
 $stmt = $commande->getCurrentCommande($client_id);
 
-$commandeInfo = null;
 $stmt_items = null;
 
 // On vérifie si on a trouvé une commande
@@ -39,6 +38,7 @@ if ($stmt->rowCount() > 0) {
         // --- 1. Gestion des Articles ---
         $stmt_items = $commande->afficherItemCommande($id_cmd);
         $row['liste_articles'] = $stmt_items->fetchAll(PDO::FETCH_ASSOC);
+        $restaurant_commande = $row['nom_restaurant'];
 
         // --- 2. Gestion des Formules ---
         $stmt_formules = $commande->afficherFormulesCommande($id_cmd);
