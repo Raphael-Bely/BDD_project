@@ -258,9 +258,25 @@
     <div class="header-nav">
         <a href="index.php" class="btn-retour">← Retour</a>
         <?php if (isset($_SESSION['client_id'])): ?>
-            <a href="historique.php">📋 Historique</a>
+            <a href="suivi.php">📦 Suivi</a>
+            <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                <a href="historique.php">📋 Historique</a>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
+
+    <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+        <div
+            style="max-width: 800px; margin: 0 auto 20px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 15px;">
+            <strong>ℹ️ Mode Invité</strong>
+            <p style="margin: 10px 0 0 0; color: #856404;">Vous commandez en tant qu'invité. Une fois votre commande
+                confirmée, vous pourrez la suivre dans l'onglet "Suivi".
+                <a href="create_account.php" style="color: #0056b3; text-decoration: underline; font-weight: bold;">Créer un
+                    compte</a> pour
+                conserver l'historique de vos commandes (votre panier actuel sera préservé).
+            </p>
+        </div>
+    <?php endif; ?>
 
     <?php
     if (!empty($historiqueCommandes)) {

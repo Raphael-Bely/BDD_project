@@ -173,7 +173,10 @@
                 <a href="index.php" class="btn-retour">← Retour à la liste des restaurants</a>
                 <?php if (isset($_SESSION['client_id'])): ?>
                     <a href="commande.php?client_id=<?= $client_id ?>">🛒 Mon panier</a>
-                    <a href="historique.php">📋 Historique</a>
+                    <a href="suivi.php">📦 Suivi</a>
+                    <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                        <a href="historique.php">📋 Historique</a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div> <a href="formules.php?id=<?= $current_resto_id ?>" class="btn-formules">
                 🍱 Voir les Formules

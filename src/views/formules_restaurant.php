@@ -132,7 +132,10 @@
         <?php if (isset($_SESSION['client_id'])): ?>
             <div>
                 <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
-                <a href="historique.php">📋 Historique</a>
+                <a href="suivi.php">📦 Suivi</a>
+                <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                    <a href="historique.php">📋 Historique</a>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </div>

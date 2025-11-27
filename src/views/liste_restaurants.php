@@ -91,15 +91,28 @@
 <!-- HEADER (Inchangé) -->
 <div class="header-bar">
     <?php if (isset($_SESSION['client_id'])): ?>
-        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !</p>
+        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong>
+            <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+                <span
+                    style="background-color: #f39c12; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 5px;">Mode
+                    Invité</span>
+            <?php endif; ?>
+            !
+        </p>
 
         <div>
             <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
-            <a href="historique.php">📋 Historique</a>
+            <a href="suivi.php">📦 Suivi</a>
+            <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                <a href="historique.php">📋 Historique</a>
+            <?php endif; ?>
             <a href="logout.php" style="color: red;">Se déconnecter</a>
         </div>
     <?php else: ?>
         <div>
+            <a href="login_invite.php"
+                style="background-color: #27ae60; padding: 8px 15px; border-radius: 5px; margin-right: 10px;">👤 Commander
+                en tant qu'invité</a>
             <a href="login.php">Se connecter</a> |
             <a href="create_account.php">Créer un compte</a>
         </div>
