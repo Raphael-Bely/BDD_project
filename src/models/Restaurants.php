@@ -53,5 +53,16 @@ class Restaurant {
         $stmt->execute();
         return $stmt;
     }
+
+    public function getAllCategories() {
+        $query = Query::loadQuery('sql_requests/getAllCategories.sql');
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
 }
 ?>
