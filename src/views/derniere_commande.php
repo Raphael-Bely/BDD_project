@@ -271,6 +271,9 @@
             $dateCmd = new DateTime($commande['date_commande']);
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
+            $points_gagnes = isset($commande['points_gagnes_commande']) ? $commande['points_gagnes_commande'] : 0;
+            $solde_points = isset($commande['solde_points_actuel']) ? $commande['solde_points_actuel'] : 0;
+
             // --- DÉBUT CARTE ---
             echo "<div class='commande-card'>";
 
@@ -352,13 +355,24 @@
                 echo "</tbody></table>";
             }
 
-            // 3. TOTAL
+            // 3. FIDÉLITÉ
+            echo "<div class='loyalty-section'>";
+            echo "<div class='loyalty-info'>";
+            echo "<h4>🎁 Programme Fidélité</h4>";
+            echo "<p>Solde actuel : <strong>{$solde_actuel} pts</strong></p>";
+            echo "<p style='font-size:0.85em; color:#666;'>Nouveau solde après validation : " . ($solde_actuel + $points_gagnes) . " pts</p>";
+            echo "</div>";
+            echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
+            echo "</div>";
+
+
+            // 4. TOTAL
             echo "<div class='total-section'>";
             echo "<span class='total-label'>Total payé :</span>";
             echo "<span class='total-price'>" . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €</span>";
             echo "</div>";
 
-            // 4. ACTION (Annuler)
+            // 5. ACTION (Annuler)
             echo "<div class='actions-footer'>";
             echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
             echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
@@ -371,10 +385,11 @@
             echo "<div class='actions-footer'>";
             echo "<form action='confirmer_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir confirmer cette commande ?');\">";
             echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
-            echo "<button type='submit' class='btn-confirmer'>Commander</button>";
+            echo "<input type='hidden' name='restaurant_id' value='" . $commande['restaurant_id'] . "'>";
+            echo "<input type='hidden' name='total' value='" . $commande['prix_total_remise'] . "'>";
+            echo "<button type='submit' class='btn-confirmer'>Valider et Payer</button>";
             echo "</form>";
             echo "</div>";
-
             echo "</div>"; // Fin commande-body
             echo "</div>"; // Fin commande-card
         }
