@@ -2,16 +2,186 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Commandes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-       /* Ton CSS d'origine... */
-       .sub-table-header { background-color: #e67e22; color: white; } /* Orange pour distinguer */
-       .composition-text { font-size: 0.9em; color: #666; font-style: italic; }
+        /* --- RESET & GLOBAL --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        /* --- BOUTON RETOUR --- */
+        .btn-retour {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .btn-retour:hover { color: #111827; }
+
+        /* --- CARTE COMMANDE --- */
+        .commande-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            overflow: hidden; /* Pour que le header ne dépasse pas */
+            border: 1px solid #e5e7eb;
+        }
+
+        /* --- EN-TÊTE DE LA CARTE --- */
+        .commande-header {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .commande-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        .commande-meta {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .commande-body {
+            padding: 30px;
+        }
+
+        /* --- SECTIONS (TITRES H3) --- */
+        h3 {
+            font-size: 1.1rem;
+            color: #374151;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            padding-left: 10px;
+        }
+        h3.titre-formule { border-color: #f59e0b; color: #d97706; } /* Orange */
+        h3.titre-article { border-color: #3b82f6; color: #2563eb; } /* Bleu */
+
+        /* --- TABLEAUX MODERNES --- */
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .modern-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .modern-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: top;
+        }
+
+        .modern-table tr:last-child td { border-bottom: none; }
+
+        /* Colonnes spécifiques */
+        .col-right { text-align: right; }
+        .col-center { text-align: center; }
+        .font-bold { font-weight: 600; color: #111827; }
+
+        /* Composition des formules */
+        .composition-tag {
+            display: inline-block;
+            font-size: 0.85rem;
+            color: #6b7280;
+            background-color: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        /* --- TOTAL --- */
+        .total-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .total-label {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-right: 15px;
+        }
+
+        .total-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #10b981; /* Vert success */
+        }
+
+        /* --- BOUTON ANNULER --- */
+        .actions-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .btn-annuler {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-annuler:hover {
+            background-color: #fca5a5;
+            color: #7f1d1d;
+            border-color: #fca5a5;
+        }
+
+        /* --- EMPTY STATE --- */
+        .alert-empty {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+        }
     </style>
 </head>
 <body>
 
-    <a href="index.php" class="btn-retour">← Retour</a>
+    <a href="index.php" class="btn-retour">
+        &larr; Retour à l'accueil
+    </a>
 
     <?php
     if (!empty($historiqueCommandes)) {
@@ -19,71 +189,72 @@
         foreach ($historiqueCommandes as $commande) {
             
             $commande_id = $commande['commande_id'];
-            // Note: Assure-toi que ton SQL principal récupère bien 'date_commande' et 'prix_total_remise'
             $dateCmd = new DateTime($commande['date_commande']); 
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
+            // --- DÉBUT CARTE ---
             echo "<div class='commande-card'>";
                 
+                // --- HEADER ---
                 echo "<div class='commande-header'>";
-                    echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
+                    echo "<div>";
+                        echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
+                    echo "</div>";
+                    echo "<div class='commande-meta'>";
+                        echo "📅 " . $dateAffichee;
+                        if (!empty($commande['heure_retrait'])) {
+                            $retraitCmd = new DateTime($commande['heure_retrait']);
+                            echo " &nbsp;|&nbsp; ⏱️ Retrait : " . $retraitCmd->format('H:i');
+                        }
+                    echo "</div>";
                 echo "</div>";
 
-                echo "<div class='commande-info'>";
-                    echo "<p><span class='label'>Date :</span> " . $dateAffichee . "</p>";
-                    
-                    if (!empty($commande['heure_retrait'])) {
-                        $retraitCmd = new DateTime($commande['heure_retrait']);
-                        echo "<p><span class='label'>Retrait :</span> " . $retraitCmd->format('H:i') . "</p>";
-                    }
+                // --- CORPS ---
+                echo "<div class='commande-body'>";
 
-                    // ==========================================
-                    // 1. AFFICHAGE DES FORMULES
-                    // ==========================================
+                    // 1. FORMULES
                     if (!empty($commande['liste_formules'])) {
-                        echo "<h3>🍱 Formules </h3>";
+                        echo "<h3 class='titre-formule'>🍱 Menus & Formules</h3>";
                         
-                        echo "<table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>";
-                        echo "<thead><tr class='sub-table-header'>
-                                <th style='padding: 8px; text-align: left;'>Menu</th>
-                                <th style='padding: 8px; text-align: left;'>Composition</th>
-                                <th style='padding: 8px; text-align: right;'>Prix</th>
-                              </tr></thead><tbody>";
+                        echo "<table class='modern-table'>";
+                        echo "<thead>
+                                <tr>
+                                    <th>Menu</th>
+                                    <th>Détail de la composition</th>
+                                    <th class='col-right'>Prix</th>
+                                </tr>
+                              </thead>
+                              <tbody>";
 
                         foreach ($commande['liste_formules'] as $formule) {
-                            echo "<tr style='border-bottom: 1px solid #ecf0f1;'>";
-                            
-                            // Nom de la formule
-                            echo "<td style='padding: 10px; vertical-align: top;'><strong>" . htmlspecialchars($formule['nom']) . "</strong></td>";
-                            
-                            // Liste des items (Entrée, Plat...) regroupés
-                            echo "<td style='padding: 10px;'>";
-                            if (!empty($formule['items'])) {
-                                echo "<span class='composition-text'>" . htmlspecialchars(implode(', ', $formule['items'])) . "</span>";
-                            }
-                            echo "</td>";
-
-                            // Prix
-                            echo "<td style='padding: 10px; text-align: right; vertical-align: top; font-weight: bold;'>" . number_format($formule['prix'], 2, ',', ' ') . " €</td>";
-                            
+                            echo "<tr>";
+                                echo "<td class='font-bold'>" . htmlspecialchars($formule['nom']) . "</td>";
+                                echo "<td>";
+                                    if (!empty($formule['items'])) {
+                                        // Petit style badge pour la composition
+                                        echo "<span class='composition-tag'>" . htmlspecialchars(implode(' + ', $formule['items'])) . "</span>";
+                                    }
+                                echo "</td>";
+                                echo "<td class='col-right font-bold'>" . number_format($formule['prix'], 2, ',', ' ') . " €</td>";
                             echo "</tr>";
                         }
                         echo "</tbody></table>";
                     }
 
-                    // ==========================================
-                    // 2. AFFICHAGE DES ARTICLES À LA CARTE
-                    // ==========================================
+                    // 2. ARTICLES À LA CARTE
                     if (!empty($commande['liste_articles'])) {
-                        echo "<h3>📦 Articles à la carte</h3>";
+                        echo "<h3 class='titre-article'>📦 Articles à la carte</h3>";
                         
-                        echo "<table style='width: 100%; border-collapse: collapse; margin-top: 5px;'>";
-                        echo "<thead><tr style='background-color: #34495e; color: white;'>
-                                <th style='padding: 10px; text-align: left;'>Article</th>
-                                <th style='padding: 10px; text-align: left;'>Prix unitaire</th>
-                                <th style='padding: 10px; text-align: center;'>Qté</th>
-                                <th style='padding: 10px; text-align: right;'>Sous-total</th>
-                              </tr></thead><tbody>";
+                        echo "<table class='modern-table'>";
+                        echo "<thead>
+                                <tr>
+                                    <th>Article</th>
+                                    <th class='col-right'>Prix Unit.</th>
+                                    <th class='col-center'>Qté</th>
+                                    <th class='col-right'>Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>";
                         
                         foreach ($commande['liste_articles'] as $item) {
                             $nom = htmlspecialchars($item['nom']);
@@ -91,32 +262,39 @@
                             $quantite = $item['quantite'];
                             $sousTotal = $prix * $quantite;
                             
-                            echo "<tr style='border-bottom: 1px solid #ecf0f1;'>";
-                            echo "<td style='padding: 10px;'>{$nom}</td>";
-                            echo "<td style='padding: 10px;'>" . number_format($prix, 2, ',', ' ') . " €</td>";
-                            echo "<td style='padding: 10px; text-align: center;'>{$quantite}</td>";
-                            echo "<td style='padding: 10px; text-align: right;'>" . number_format($sousTotal, 2, ',', ' ') . " €</td>";
+                            echo "<tr>";
+                                echo "<td class='font-bold'>{$nom}</td>";
+                                echo "<td class='col-right'>" . number_format($prix, 2, ',', ' ') . " €</td>";
+                                echo "<td class='col-center'>x{$quantite}</td>";
+                                echo "<td class='col-right font-bold' style='color:#374151;'>" . number_format($sousTotal, 2, ',', ' ') . " €</td>";
                             echo "</tr>";
                         }
                         echo "</tbody></table>";
                     }
 
-                    // TOTAL GÉNÉRAL (Issu de la table commande)
-                    echo "<div class='prix-total' style='margin-top:20px; text-align:right; font-size:1.4em; color:#27ae60; font-weight:bold;'>";
-                    echo "TOTAL COMMANDE : " . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €";
+                    // 3. TOTAL
+                    echo "<div class='total-section'>";
+                        echo "<span class='total-label'>Total payé :</span>";
+                        echo "<span class='total-price'>" . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €</span>";
                     echo "</div>";
 
-                    // Formulaire Annulation
-                    echo "<form action='annuler_commande.php' method='POST' style='margin-top:20px;' onsubmit=\"return confirm('Êtes-vous sûr ?');\">";
-                        echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
-                        echo "<button type='submit' class='btn-annuler'>🗑️ Annuler la commande</button>";
-                    echo "</form>";
+                    // 4. ACTION (Annuler)
+                    echo "<div class='actions-footer'>";
+                        echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
+                            echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                            echo "<button type='submit' class='btn-annuler'>🗑️ Annuler cette commande</button>";
+                        echo "</form>";
+                    echo "</div>";
 
-                echo "</div>"; 
-            echo "</div>"; 
+                echo "</div>"; // Fin commande-body
+            echo "</div>"; // Fin commande-card
         }
     } else {
-        echo "<div class='commande-card'><p class='alert'>Aucune commande trouvée.</p></div>";
+        echo "<div class='alert-empty'>";
+        echo "<h3>Aucune commande en cours 🍽️</h3>";
+        echo "<p>Vous n'avez pas encore passé de commande, ou votre historique est vide.</p>";
+        echo "<a href='index.php' style='color:#2563eb; font-weight:bold; text-decoration:none;'>Aller choisir un restaurant</a>";
+        echo "</div>";
     }
     ?>
 

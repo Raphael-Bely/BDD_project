@@ -78,5 +78,14 @@ class Commande {
         
         return $stmt->execute();
     }
+
+    public function confirmOrder($commande_id) {
+        $query = Query::loadQuery('sql_requests/confirmCommande.sql');
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $commande_id);
+
+        return $stmt->execute();
+    }
 }
 ?>
