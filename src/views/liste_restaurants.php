@@ -1,174 +1,208 @@
-<style>
-    /* --- CSS Existant --- */
-    .restaurant-card {
-        border: 1px solid #ddd;
-        padding: 20px;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        background-color: white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s;
-    }
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurants</title>
+    <style>
+        /* --- CSS --- */
+        :root {
+            --bg-body: #f8f9fa;
+            --text-main: #2c3e50;
+            --primary-color: #1a1a1a;
+            --accent-color: #e67e22;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
 
-    .restaurant-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
 
-    .restaurant-card a {
-        font-weight: bold;
-        text-decoration: none;
-        color: #2c3e50;
-        font-size: 1.2em;
-    }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
 
-    /* --- NOUVEAU CSS POUR LES FILTRES --- */
-    .filtres-container {
-        margin: 20px 0;
-        overflow-x: auto;
-        /* Permet de scroller si trop de catégories */
-        white-space: nowrap;
-        padding-bottom: 10px;
-    }
+        /* HEADER */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-    .btn-filtre {
-        display: inline-block;
-        padding: 8px 16px;
-        margin-right: 10px;
-        border-radius: 20px;
-        text-decoration: none;
-        color: #555;
-        background-color: #f1f1f1;
-        font-size: 0.9em;
-        transition: all 0.3s ease;
-        border: 1px solid #ddd;
-    }
+        .header-actions a {
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: 600;
+        }
 
-    .btn-filtre:hover {
-        background-color: #e2e6ea;
-    }
+        /* FILTRES */
+        .filtres-wrapper {
+            margin-bottom: 40px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 10px;
+            /* Masquer scrollbar */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .filtres-wrapper::-webkit-scrollbar { display: none; }
 
-    /* Style du bouton actif */
-    .btn-filtre.actif {
-        background-color: #e67e22;
-        /* Orange UberMiam */
-        color: white;
-        border-color: #d35400;
-    }
+        .btn-filtre {
+            display: inline-block;
+            padding: 10px 24px;
+            margin-right: 12px;
+            border-radius: 50px;
+            text-decoration: none;
+            color: #7f8c8d;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
 
-    .header-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f1f1f1;
-    }
+        .btn-filtre:hover, .btn-filtre.actif {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
-    .header-bar {
-        background-color: #3498db;
-        padding: 15px;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-radius: 5px;
-    }
+        /* TITRE */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            color: var(--text-main);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+        }
 
-    .header-bar a {
-        color: white;
-        margin: 0 10px;
-        text-decoration: none;
-        font-weight: 500;
-    }
+        /* GRILLE RESTAURANTS (CORRECTION DU CHEVAUCHEMENT) */
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 40px; /* Espace large entre les cartes */
+            padding-bottom: 50px;
+            align-items: start; /* Empêche l'étirement vertical */
+        }
 
-    .header-bar a:hover {
-        text-decoration: underline;
-    }
-</style>
+        .restaurant-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 180px; /* Hauteur min pour le look */
+        }
 
-<!-- HEADER (Inchangé) -->
-<div class="header-bar">
-    <?php if (isset($_SESSION['client_id'])): ?>
-        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !</p>
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+            z-index: 5;
+        }
 
-        <div>
-            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
-            <a href="historique.php">📋 Historique</a>
-            <a href="logout.php" style="color: red;">Se déconnecter</a>
-        </div>
-    <?php else: ?>
-        <div>
-            <a href="login.php">Se connecter</a> |
-            <a href="create_account.php">Créer un compte</a>
-        </div>
-    <?php endif; ?>
-</div>
+        .card-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+            margin-bottom: 15px;
+            display: block;
+            line-height: 1.3;
+        }
+        
+        .card-address {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: auto; 
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
 
-<h2>Liste des Restaurants Disponibles 🍽️</h2>
+<div class="container">
 
-<?php
-// --- 1. RÉCUPÉRATION DES CATÉGORIES POUR LES BOUTONS ---
-// On suppose que $db est déjà connecté via require 'config/Database.php' plus haut dans le contrôleur
-$sql_cats = "SELECT * FROM categories_restaurants ORDER BY nom";
-$stmt_cats = $db->query($sql_cats);
-$categories = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
+    <div class="header-bar">
+        <?php if ($est_connecte): ?>
+            <div>Bonjour, <strong><?= htmlspecialchars($nom_client) ?></strong> ! 👋</div>
+            <div class="header-actions">
+                <a href="commande.php" style="color:var(--primary-color);">Ma dernière commande</a>
+                <a href="logout.php" style="color: #e74c3c;">Se déconnecter</a>
+            </div>
+        <?php else: ?>
+            <div class="header-actions">
+                <a href="login.php">Se connecter</a>
+                <a href="create_account.php" style="background:var(--primary-color); color:white; padding:8px 15px; border-radius:8px;">Créer un compte</a>
+            </div>
+        <?php endif; ?>
+    </div>
 
-// Récupération de l'ID catégorie actuel (si cliqué)
-$current_cat = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;
-?>
-
-<!-- AFFICHAGE DES FILTRES -->
-<div class="filtres-container">
-    <!-- Bouton "Tous" -->
-    <a href="index.php" class="btn-filtre <?= $current_cat === null ? 'actif' : '' ?>">
-        Tout voir
-    </a>
-
-    <!-- Boucle sur les catégories -->
-    <?php foreach ($categories as $cat): ?>
-        <a href="index.php?cat_id=<?= $cat['categorie_restaurant_id'] ?>"
-            class="btn-filtre <?= $current_cat == $cat['categorie_restaurant_id'] ? 'actif' : '' ?>">
-            <?= htmlspecialchars($cat['nom']) ?>
+    <div class="filtres-wrapper">
+        <a href="index.php" class="btn-filtre <?= $cat_id === null ? 'actif' : '' ?>">
+            Tout voir
         </a>
-    <?php endforeach; ?>
+
+        <?php foreach ($categories as $cat): ?>
+            <a href="index.php?cat_id=<?= $cat['categorie_restaurant_id'] ?>" 
+               class="btn-filtre <?= $cat_id == $cat['categorie_restaurant_id'] ? 'actif' : '' ?>">
+                <?= htmlspecialchars($cat['nom']) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
+    <h2 class="section-title">
+    <?= ($current_cat && $stmt_cat) 
+        ? "Restaurants sélectionnés : " . htmlspecialchars($stmt_cat->fetch(PDO::FETCH_ASSOC)['nom']) 
+        : "Nos Restaurants Partenaires 🍽️" 
+    ?>
+</h2>
+
+    <div class="restaurant-grid">
+        <?php
+        if ($stmt->rowCount() > 0) {
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // Extraction sécurisée
+                $id = $row['restaurant_id'];
+                $nom = htmlspecialchars($row['nom']);
+                $adresse = htmlspecialchars($row['adresse']);
+                
+                echo "<div class='restaurant-card'>";
+                    echo "<a href='menu.php?id={$id}' class='card-title'>{$nom}</a>";
+                    echo "<p class='card-address'>📍 {$adresse}</p>";
+                echo "</div>";
+            }
+        } else {
+            // Affichage si vide
+            echo "<div style='grid-column: 1 / -1; padding: 40px; background:white; border-radius:12px; text-align:center;'>";
+            echo "<p style='font-size:1.2rem; color:#7f8c8d;'>Aucun restaurant trouvé pour cette catégorie. 😔</p>";
+            echo "<a href='index.php' style='color:var(--accent-color); font-weight:bold; text-decoration:none;'>Retourner à la liste complète</a>";
+            echo "</div>";
+        }
+        ?>
+    </div>
+
 </div>
 
-<!-- LOGIQUE DE RÉCUPÉRATION DES RESTAURANTS -->
-<?php
-// Si une catégorie est sélectionnée, on filtre
-if ($current_cat) {
-    // Lire le fichier SQL de filtre
-    $sql_filter = file_get_contents(__DIR__ . '/../../sql_requests/getRestaurantsByCategory.sql');
-    $stmt = $db->prepare($sql_filter);
-    $stmt->execute(['id_cat' => $current_cat]);
-} else {
-    // Sinon, on affiche tout (votre logique actuelle)
-    // Assurez-vous que getAllRestaurants.sql est bien chargé avant
-    $sql_all = file_get_contents(__DIR__ . '/../../sql_requests/getAllRestaurants.sql');
-    $stmt = $db->query($sql_all);
-}
-?>
-
-<!-- LISTE DES CARTES -->
-<?php
-if ($stmt->rowCount() > 0) {
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        extract($row);
-
-        echo "<div class='restaurant-card'>";
-        echo "<a href='menu.php?id={$restaurant_id}'>{$nom}</a>";
-        echo "<p style='color:#666; margin-top:5px;'>📍 {$adresse}</p>";
-
-        // Petit bonus : Afficher la catégorie sur la carte aussi si disponible
-        // (Nécessite que votre requête SQL getAllRestaurants récupère aussi la catégorie)
-        echo "</div>";
-    }
-} else {
-    echo "<div style='text-align:center; padding: 40px; color: #777;'>";
-    echo "<p>Aucun restaurant trouvé pour cette catégorie. 😔</p>";
-    echo "<a href='index.php'>Voir tous les restaurants</a>";
-    echo "</div>";
-}
-?>
+</body>
+</html>

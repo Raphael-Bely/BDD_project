@@ -157,8 +157,6 @@
                     ];
                 }
 
-                // On ajoute la catégorie (composant) à cette formule
-                // (Assurez-vous que votre requête SQL renvoie bien 'nom_categorie')
                 $formules_organisees[$nom]['composition'][] = $row['nom_categorie'];
             }
 
