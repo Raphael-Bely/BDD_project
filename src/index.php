@@ -1,19 +1,15 @@
 <?php
-
 session_start();
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// 1. Inclure les fichiers nécessaires
 require_once './config/Database.php';
 require_once './models/Restaurants.php';
 
-// 2. Initialiser la connexion à la BDD
 $database = new Database();
 $db = $database->getConnection();
 
-// Vérification de la connexion du client
 $est_connecte = false;
 $nom_client = "";
 
@@ -26,14 +22,30 @@ else {
     $current_client_id = null;
 }
 
-// 3. Créer une instance du Modèle Restaurant
 $restaurant = new Restaurant($db);
 
-// 4. Appeler la méthode pour obtenir les données
-$stmt = $restaurant->getAllRestaurants(); // $stmt est le résultat de la requête
+$categories = $restaurant->getAllCategories();
 
-// 5. Inclure la Vue pour afficher les données
-// Note : Le fichier liste_restaurants.php utilise la variable $stmt
+$current_cat = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;
+$lat = isset($_GET['lat']) ? $_GET['lat'] : null;
+$lon = isset($_GET['lon']) ? $_GET['lon'] : null;
+
+$stmt_cat = null;
+$current_cat_info = null; 
+
+if ($lat && $lon) {
+    $stmt = $restaurant->getRestaurantsAround($lat, $lon, 3); 
+    $current_cat = null; 
+    $titre_special = "Restaurants autour de vous (3km) 📍";
+
+} elseif (isset($current_cat)) {
+    $stmt = $restaurant->getByCategory($current_cat);
+    
+    $stmt_cat = $restaurant->getCategoriesById($current_cat);
+    
+} else {
+    $stmt = $restaurant->getAllRestaurants();
+}
+
 include 'views/liste_restaurants.php';
 ?>
-

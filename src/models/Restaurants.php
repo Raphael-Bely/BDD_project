@@ -37,5 +37,21 @@ class Restaurant {
 
         return $stmt;
     }
+
+    public function getRestaurantsAround($lat, $lon, $rayon_km) {
+        $query = Query::loadQuery('sql_requests/getRestaurantAround.sql');
+        $stmt = $this->conn->prepare($query);
+
+        $rayon_m = $rayon_km * 1000;
+
+        $stmt->bindParam(1, $lon);
+        $stmt->bindParam(2, $lat);
+        $stmt->bindParam(3, $lon);
+        $stmt->bindParam(4, $lat);
+        $stmt->bindParam(5, $rayon_m);
+
+        $stmt->execute();
+        return $stmt;
+    }
 }
 ?>

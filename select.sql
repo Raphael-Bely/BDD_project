@@ -102,11 +102,11 @@ ORDER BY I.nom, annee, mois;
 
 -- Un utilisateur qui renseigne sa position (GPS) peut consulter la liste des restaurtants disponibles, dans un rayon de 2km, rangés par ordre croissant de distance.
 
-SELECT R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint([longitude_utilisateur], [latitude_utilisateur]), 4326)) as distance_en_m
+SELECT R.restaurant_id, R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint(?, ?)::geography, 4326)/1000) as distance_en_km
 FROM restaurants as R
 WHERE ST_DWithin(
     R.coordonnees_gps,
-    ST_SetSRID(ST_MakePoint([longitude_utilisateur], [latitude_utilisateur]), 4326),
-    2000
+    ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,
+    ?
 )
-ORDER BY distance_en_m ASC;
+ORDER BY distance_en_km ASC;

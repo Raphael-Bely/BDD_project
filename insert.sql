@@ -31,6 +31,11 @@ INSERT INTO restaurants (nom, adresse, coordonnees_gps) VALUES
     'Septime', 
     '80 Rue de Charonne, 75011 Paris', 
     ST_SetSRID(ST_MakePoint(2.3804, 48.8530), 4326)
+),
+(
+    'BAR de l''Enseirb',
+    'Avenue du docteur Albert Schweitzer',
+    ST_SetSRID(ST_MakePoint(-0.6026647, 44.8073656), 4326)
 );
 
 INSERT INTO categories_items (nom) VALUES
