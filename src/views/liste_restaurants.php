@@ -94,8 +94,8 @@
         <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !</p>
 
         <div>
-            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">Ma commande actuelle</a>
-            <a href="historique.php">Historique</a>
+            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
+            <a href="historique.php">📋 Historique</a>
             <a href="logout.php" style="color: red;">Se déconnecter</a>
         </div>
     <?php else: ?>

@@ -172,12 +172,10 @@
             <div>
                 <a href="index.php" class="btn-retour">← Retour à la liste des restaurants</a>
                 <?php if (isset($_SESSION['client_id'])): ?>
-                    <a href="commande.php?client_id=<?= $client_id ?>">Ma commande actuelle</a>
-                    <a href="historique.php">Historique</a>
+                    <a href="commande.php?client_id=<?= $client_id ?>">🛒 Mon panier</a>
+                    <a href="historique.php">📋 Historique</a>
                 <?php endif; ?>
-            </div>
-
-            <a href="formules.php?id=<?= $current_resto_id ?>" class="btn-formules">
+            </div> <a href="formules.php?id=<?= $current_resto_id ?>" class="btn-formules">
                 🍱 Voir les Formules
             </a>
         </div>

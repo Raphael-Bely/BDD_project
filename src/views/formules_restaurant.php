@@ -131,8 +131,8 @@
 
         <?php if (isset($_SESSION['client_id'])): ?>
             <div>
-                <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">Ma commande actuelle</a>
-                <a href="historique.php">Historique</a>
+                <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
+                <a href="historique.php">📋 Historique</a>
             </div>
         <?php endif; ?>
     </div>

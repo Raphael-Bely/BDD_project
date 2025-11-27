@@ -24,6 +24,13 @@
         margin-bottom: 15px;
         border-radius: 5px;
         background-color: #f9f9f9;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+    }
+
+    .commande-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
 
     .commande-header {
@@ -98,8 +105,8 @@
 
         <div>
             <a href="index.php">Restaurants</a>
-            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">Ma commande actuelle</a>
-            <a href="historique.php">Historique</a>
+            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
+            <a href="historique.php">📋 Historique</a>
             <a href="logout.php" style="color: #ffcccc;">Se déconnecter</a>
         </div>
     <?php endif; ?>
@@ -119,13 +126,14 @@ if ($stmt->rowCount() > 0) {
         // Formater la date
         $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
 
-        echo "<div class='commande-card'>";
+        echo "<a href='detail_commande.php?id={$commande_id}' style='text-decoration: none; color: inherit;'>";
+        echo "<div class='commande-card' style='cursor: pointer; transition: box-shadow 0.2s;' onmouseover='this.style.boxShadow=\"0 6px 20px rgba(0,0,0,0.15)\"' onmouseout='this.style.boxShadow=\"0 2px 8px rgba(0,0,0,0.08)\">";
         echo "<div class='commande-header'>";
         echo "<div>";
         echo "<h3>{$restaurant_nom}</h3>";
         echo "<p class='commande-date'>Commandé le {$date_formatee}</p>";
         echo "</div>";
-        echo "<span class='commande-etat {$etat_class}'>" . ucfirst($etat) . "</span>";
+        echo "<span class='commande-etat {$etat_class}>" . ucfirst($etat) . "</span>";
         echo "</div>";
 
         echo "<div class='commande-details'>";
@@ -137,6 +145,7 @@ if ($stmt->rowCount() > 0) {
         echo "Prix total : " . number_format($prix_total, 2, ',', ' ') . " €";
         echo "</div>";
         echo "</div>";
+        echo "</a>";
     }
 } else {
     echo "<div class='no-commandes'>";
