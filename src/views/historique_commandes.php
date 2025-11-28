@@ -1,104 +1,144 @@
-<style>
-    .header-bar {
-        background-color: #3498db;
-        padding: 10px;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Historique</title>
+    <style>
+        /* --- 1. Variables & Base (Identique aux autres pages) --- */
+        :root {
+            --bg-body: #f8f9fa;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --primary-color: #1a1a1a;
+            --accent-color: #e67e22; /* Orange marque */
+            --success-color: #27ae60; /* Vert succès */
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
 
-    .header-bar a {
-        color: white;
-        margin: 0 10px;
-        text-decoration: none;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
 
-    .header-bar a:hover {
-        text-decoration: underline;
-    }
+        .container {
+            max-width: 900px; /* Un peu plus étroit pour la lecture */
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
 
-    .commande-card {
-        border: 1px solid #ccc;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.2s ease;
-    }
+        /* --- 2. Header Bar (Cohérent avec l'accueil) --- */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-    .commande-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    }
+        .header-links a {
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
 
-    .commande-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
+        .header-links a:hover, .header-links a.active {
+            color: var(--primary-color);
+        }
 
-    .commande-date {
-        font-size: 0.9em;
-        color: #666;
-    }
+        .btn-logout {
+            color: #e74c3c !important;
+        }
+        .btn-logout:hover { text-decoration: underline; }
 
-    .commande-etat {
-        padding: 5px 10px;
-        border-radius: 3px;
-        font-weight: bold;
-        font-size: 0.85em;
-    }
+        /* --- 3. Titre --- */
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            color: var(--text-main);
+        }
 
-    .etat-terminee {
-        background-color: #2ecc71;
-        color: white;
-    }
+        /* --- 4. Liste des Commandes (Cards) --- */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-    .etat-livree {
-        background-color: #27ae60;
-        color: white;
-    }
+        /* Lien global qui enveloppe la carte */
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
 
-    .etat-annulee {
-        background-color: #e74c3c;
-        color: white;
-    }
+        .commande-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+        }
 
-    .commande-details {
-        margin-top: 10px;
-    }
+        .card-link:hover .commande-card {
+            transform: translateY(-4px);
+            box-shadow: var(--hover-shadow);
+            border-color: rgba(0,0,0,0.05);
+        }
 
-    .prix-total {
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #2c3e50;
-        margin-top: 10px;
-    }
+        /* En-tête de la carte (Haut) */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f1f1f1;
+            padding-bottom: 15px;
+        }
 
-    .no-commandes {
-        text-align: center;
-        padding: 40px;
-        color: #666;
-    }
+        .resto-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+        }
 
-    .btn-retour {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 10px 20px;
-        background-color: #3498db;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-    }
+        .order-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: block;
+        }
 
-    .btn-retour:hover {
-        background-color: #2980b9;
-    }
+        /* Badges d'état */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 </style>
-
 <div class="header-bar">
     <?php if (isset($_SESSION['client_id'])): ?>
         <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong>

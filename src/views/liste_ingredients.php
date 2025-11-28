@@ -2,106 +2,148 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Détails Nutritionnels</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingrédients du Plat</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-        .nutrition-card {
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .ingredient-list {
-            font-style: italic;
-            color: #555;
-            margin-bottom: 20px;
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            margin: 0;
+            padding: 40px 20px;
             line-height: 1.6;
         }
-        .nutrition-table {
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .btn-retour {
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .btn-retour:hover {
+            color: #111827;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #111827;
+        }
+
+        .ingredients-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
+
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 20px;
         }
-        .nutrition-table th, .nutrition-table td {
-            border-bottom: 1px solid #eee;
-            padding: 10px;
+
+        table th {
+            background-color: #f9fafb;
+            padding: 12px;
             text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+            color: #374151;
         }
-        .nutrition-table th {
-            background-color: #f8f9fa;
-            width: 60%;
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .valeur {
-            font-weight: bold;
-            color: #2c3e50;
+
+        table tr:hover {
+            background-color: #f9fafb;
         }
-        .retour-btn { text-decoration: none; color: #333; font-weight: bold; display: inline-block; margin-bottom: 20px;}
+
+        .no-items {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .info-box {
+            background-color: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #0c4a6e;
+        }
     </style>
 </head>
 <body>
 
-    <a href="javascript:history.back()" class="retour-btn">← Retour</a>
+<div class="container">
 
-    <div class="nutrition-card">
-        <h2>Composition & Nutrition</h2>
+    <div class="header">
+        <a href="javascript:history.back()" class="btn-retour">← Retour</a>
+        <h1>🥘 Ingrédients du plat</h1>
+    </div>
+
+    <div class="ingredients-card">
+        
+        <div class="info-box">
+            ℹ️ Voici la composition détaillée de ce plat avec les informations nutritionnelles.
+        </div>
 
         <?php
-        if (isset($stmt) && $stmt->rowCount() > 0) {
+        if ($stmt && $stmt->rowCount() > 0) {
+            echo "<table>";
+            echo "<thead>";
+            echo "<tr>";
+            echo "<th>Ingrédient</th>";
+            echo "<th style='text-align: center;'>Quantité (g)</th>";
+            echo "<th style='text-align: center;'>Kcal/100g</th>";
+            echo "<th style='text-align: center;'>Protéines/100g</th>";
+            echo "</tr>";
+            echo "</thead>";
+            echo "<tbody>";
             
-            $liste_ingredients = [];
-            $masse_totale_plat = 0;
-            $total_kcal_absolu = 0;
-            $total_proteines_absolu = 0;
-
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $nom = $row['nom'];
-                $qte = $row['quantite_g']; 
-                $kcal_100g_ing = $row['kcal_pour_100g'];
-                $prot_100g_ing = $row['proteines_pour_100g'];
-
-                $liste_ingredients[] = htmlspecialchars($nom);
-
-                $masse_totale_plat += $qte;
-
-                $total_kcal_absolu += ($kcal_100g_ing / 100) * $qte;
-                $total_proteines_absolu += ($prot_100g_ing / 100) * $qte;
-            }
-
-            if ($masse_totale_plat > 0) {
-                $kcal_final_100g = ($total_kcal_absolu / $masse_totale_plat) * 100; 
-                $prot_final_100g = ($total_proteines_absolu / $masse_totale_plat) * 100;
-            } else {
-                $kcal_final_100g = 0;
-                $prot_final_100g = 0;
-            }
-
-            echo "<h3>Ingrédients</h3>";
-            echo "<p class='ingredient-list'>";
-            
-            echo implode(', ', $liste_ingredients) . "."; //rassemble le tableau en une chaîne séparée par des virgules
-            echo "</p>";
-
-            echo "<h3>Valeurs nutritionnelles moyennes</h3>";
-            echo "<p><small>Pour 100 g de produit fini</small></p>";
-            
-            echo "<table class='nutrition-table'>";
+                $nom = htmlspecialchars($row['nom']);
+                $quantite = $row['quantite_g'] ?? 0;
+                $kcal = $row['kcal_pour_100g'] ?? 0;
+                $proteines = $row['proteines_pour_100g'] ?? 0;
+                
                 echo "<tr>";
-                    echo "<th>Énergie</th>";
-                   
-                    echo "<td class='valeur'>" . number_format($kcal_final_100g, 0) . " kcal</td>";  // permet d'arrondir proprement 
+                echo "<td><strong>{$nom}</strong></td>";
+                echo "<td style='text-align: center;'>{$quantite}g</td>";
+                echo "<td style='text-align: center;'>{$kcal} kcal</td>";
+                echo "<td style='text-align: center;'>{$proteines}g</td>";
                 echo "</tr>";
-                echo "<tr>";
-                    echo "<th>Protéines</th>";
-                    echo "<td class='valeur'>" . number_format($prot_final_100g, 1) . " g</td>";
-                echo "</tr>";
+            }
+            
+            echo "</tbody>";
             echo "</table>";
-
         } else {
-            echo "<p>Aucune information disponible pour ce plat.</p>";
+            echo "<div class='no-items'>Aucun ingrédient trouvé pour ce plat.</div>";
         }
         ?>
+
     </div>
+
+</div>
 
 </body>
 </html>

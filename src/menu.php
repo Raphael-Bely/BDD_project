@@ -24,6 +24,17 @@ $restaurant = new Restaurant($db);
 $restaurant_info = $restaurant->getByID($restaurant_id);
 $stmt_plats = $plat->getMenuByRestaurant($restaurant_id);
 
+if (isset($_SESSION['client_id']) && is_numeric($_SESSION['client_id'])) {
+    $client_id = $_SESSION['client_id'];
+
+    $stmt_commande_by_restau = $restaurant->getCurrentCommandeFromRestaurant($client_id, $restaurant_id);
+
+} else {
+    $client_id = null;
+    $stmt_commande_by_restau = null;
+}
+
+
 include 'views/menu_restaurant.php';
 
 ?>

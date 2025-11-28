@@ -1,6 +1,7 @@
 <?php
 
 class Database {
+
     private $host = "tabeille001.zzz.bordeaux-inp.fr";    
     private $db_name = "tabeille001"; 
     private $username = "tabeille001"; 

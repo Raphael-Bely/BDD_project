@@ -37,5 +37,57 @@ class Restaurant {
 
         return $stmt;
     }
+
+    public function getCurrentCommandFromRestaurant($client_id,$restaurant_id)
+    {
+        $query = Query::loadQuery('sql_requests/getCurrentCommandFromRestaurant.sql');
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(1, $client_id);
+        $stmt->bindParam(2, $restaurant_id);
+
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    public function getAllCategories() {
+        $query = Query::loadQuery('sql_requests/getAllCategories.sql');
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function getCategoriesById($cat_id) {
+        $query = Query::loadQuery('sql_requests/getCategorieById.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1,$cat_id);
+
+        $stmt->execute();
+        return $stmt;
+    }
+    
+    public function getByCategory($category_id) {
+        $query = Query::loadQuery('sql_requests/getRestaurantsByCategory.sql');
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(1, $category_id);
+        
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function getCurrentCommandeFromRestaurant($client_id, $restaurant_id) {
+        $query = Query::loadQuery('sql_requests/getCurrentCommandFromRestaurant.sql');
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(1, $client_id);
+        $stmt->bindParam(2, $restaurant_id);
+
+        $stmt->execute();
+        return $stmt;
+    }
 }
 ?>

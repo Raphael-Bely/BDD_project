@@ -29,11 +29,19 @@ else {
 // 3. Créer une instance du Modèle Restaurant
 $restaurant = new Restaurant($db);
 
-// 4. Appeler la méthode pour obtenir les données
-$stmt = $restaurant->getAllRestaurants(); // $stmt est le résultat de la requête
+$categories = $restaurant->getAllCategories();
 
-// 5. Inclure la Vue pour afficher les données
-// Note : Le fichier liste_restaurants.php utilise la variable $stmt
+$current_cat = isset($_GET['cat_id']) ? $_GET['cat_id'] : null;  
+
+if (isset($current_cat)) {
+    $stmt = $restaurant->getByCategory($current_cat);
+    $stmt_cat = $restaurant->getCategoriesById($current_cat);
+} else {
+    $stmt = $restaurant->getAllRestaurants();
+    $stmt_cat = null;
+}
+
+
+
 include 'views/liste_restaurants.php';
 ?>
-
