@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Historique</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Variables & Base (Identique aux autres pages) --- */
+        /* --- 1. Variables & Base --- */
         :root {
             --bg-body: #f8f9fa;
             --text-main: #2c3e50;
-            --text-muted: #7f8c8d;
+            --text-muted: #6c757d;
             --primary-color: #1a1a1a;
-            --accent-color: #e67e22; /* Orange marque */
-            --success-color: #27ae60; /* Vert succès */
+            --accent-color: #e67e22;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
             --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
@@ -27,12 +30,12 @@
         }
 
         .container {
-            max-width: 900px; /* Un peu plus étroit pour la lecture */
+            max-width: 900px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
-        /* --- 2. Header Bar (Cohérent avec l'accueil) --- */
+        /* --- 2. HEADER UNIFIÉ --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -46,32 +49,51 @@
             gap: 15px;
         }
 
-        .header-links a {
+        .user-info {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-actions a {
             text-decoration: none;
-            margin-left: 20px;
             font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.95rem;
+            color: var(--text-main);
             transition: color 0.2s;
+            font-size: 0.95rem;
         }
+        .header-actions a:hover { color: var(--accent-color); }
+        .header-actions a.active { color: var(--accent-color); }
 
-        .header-links a:hover, .header-links a.active {
-            color: var(--primary-color);
-        }
-
-        .btn-logout {
-            color: #e74c3c !important;
-        }
+        .btn-logout { color: var(--danger-color) !important; }
         .btn-logout:hover { text-decoration: underline; }
 
+        .badge-guest {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-left: 10px;
+            border: 1px solid #ffeeba;
+        }
+
         /* --- 3. Titre --- */
-        .page-title {
+        .section-title {
             font-size: 1.8rem;
             font-weight: 800;
             margin-bottom: 30px;
+            color: var(--text-main);
             border-left: 5px solid var(--accent-color);
             padding-left: 15px;
-            color: var(--text-main);
         }
 
         /* --- 4. Liste des Commandes (Cards) --- */
@@ -96,7 +118,6 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             border: 1px solid rgba(0,0,0,0.02);
             position: relative;
-            overflow: hidden;
         }
 
         .card-link:hover .commande-card {
@@ -138,72 +159,150 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-</style>
-<div class="header-bar">
-    <?php if (isset($_SESSION['client_id'])): ?>
-        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong>
-            <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
-                <span
-                    style="background-color: #f39c12; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 5px;">Mode
-                    Invité</span>
-            <?php endif; ?>
-            !
-        </p>
 
-        <div>
-            <a href="index.php">Restaurants</a>
-            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
-            <a href="suivi.php">📦 Suivi</a>
-            <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
-                <a href="historique.php">📋 Historique</a>
-            <?php endif; ?>
-            <a href="logout.php" style="color: #ffcccc;">Se déconnecter</a>
-        </div>
-    <?php endif; ?>
+        .status-finished { background-color: #d1fae5; color: #065f46; } /* Vert */
+        .status-delivery { background-color: #dbeafe; color: #1e40af; } /* Bleu */
+        .status-pending  { background-color: #ffedd5; color: #9a3412; } /* Orange */
+
+        /* Corps de la carte */
+        .card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .address-info {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            flex: 1;
+        }
+        .address-label { color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 2px;}
+
+        .price-tag {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        /* --- 5. Empty State --- */
+        .no-commandes {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            color: var(--text-muted);
+        }
+
+        .btn-retour {
+            display: inline-block;
+            margin-top: 30px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .btn-retour:hover { color: var(--primary-color); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header-bar">
+        <?php if (isset($_SESSION['client_id'])): ?>
+            <div class="user-info">
+                Bonjour, <strong>&nbsp;<?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !
+                
+                <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+                    <span class="badge-guest">Mode Invité</span>
+                <?php endif; ?>
+            </div>
+
+            <div class="header-actions">
+                <a href="index.php">Restaurants</a>
+                <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">Panier</a>
+                <a href="suivi.php">Suivi</a>
+                
+                <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                    <a href="historique.php" class="active">Historique</a>
+                <?php endif; ?>
+
+                <a href="logout.php" class="btn-logout">Se déconnecter</a>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <h2 class="section-title">📋 Historique de mes commandes</h2>
+
+    <div class="history-list">
+        <?php
+        if ($stmt->rowCount() > 0) {
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                extract($row);
+
+                // --- LOGIQUE D'ÉTAT ---
+                // 'en_commande', 'en_livraison', 'acheve'
+                if ($etat === 'acheve') {
+                    $etat_label = 'Terminée';
+                    $etat_css = 'status-finished';
+                } elseif ($etat === 'en_livraison') {
+                    $etat_label = 'En Livraison';
+                    $etat_css = 'status-delivery';
+                } else {
+                    $etat_label = 'En Préparation';
+                    $etat_css = 'status-pending';
+                }
+
+                $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
+
+                // --- AFFICHAGE CARTE CLIQUABLE ---
+                echo "<a href='detail_commande.php?id={$commande_id}' class='card-link'>";
+                    echo "<div class='commande-card'>";
+                        
+                        // En-tête (Nom + Date + Badge)
+                        echo "<div class='card-header'>";
+                            echo "<div>";
+                                echo "<h3 class='resto-name'>{$restaurant_nom}</h3>";
+                                echo "<span class='order-date'>Commande #{$commande_id} &bull; {$date_formatee}</span>";
+                            echo "</div>";
+                            echo "<span class='status-badge {$etat_css}'>{$etat_label}</span>";
+                        echo "</div>";
+
+                        // Corps (Adresse + Prix)
+                        echo "<div class='card-body'>";
+                            echo "<div class='address-info'>";
+                                echo "<span class='address-label'>Lieu de commande :</span>";
+                                echo "📍 {$restaurant_adresse}";
+                            echo "</div>";
+
+                            echo "<div class='price-tag'>";
+                                echo number_format($prix_total, 2, ',', ' ') . " €";
+                            echo "</div>";
+                        echo "</div>";
+
+                    echo "</div>";
+                echo "</a>";
+            }
+        } else {
+            // État vide
+            echo "<div class='no-commandes'>";
+                echo "<h3>C'est bien vide ici... 😔</h3>";
+                echo "<p>Vous n'avez pas encore d'historique de commandes.</p>";
+                echo "<a href='index.php' style='color:var(--accent-color); font-weight:bold; text-decoration:none; margin-top:15px; display:inline-block;'>Commander maintenant →</a>";
+            echo "</div>";
+        }
+        ?>
+    </div>
+
+    <a href="index.php" class="btn-retour">← Retour aux restaurants</a>
+
 </div>
 
-<h2>📋 Historique de mes commandes</h2>
-
-<?php
-if ($stmt->rowCount() > 0) {
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        extract($row);
-
-        // Déterminer l'état et la classe CSS
-        // La colonne etat contient maintenant: 'en_commande', 'en_livraison', 'acheve'
-        $etat_affiche = ($etat === 'acheve') ? 'Terminée' : 'En cours';
-        $etat_class = ($etat === 'acheve') ? 'etat-terminee' : 'etat-en-cours';
-
-        // Formater la date
-        $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
-
-        echo "<a href='detail_commande.php?id={$commande_id}' style='text-decoration: none; color: inherit;'>";
-        echo "<div class='commande-card' style='cursor: pointer; transition: box-shadow 0.2s;' onmouseover='this.style.boxShadow=\"0 6px 20px rgba(0,0,0,0.15)\"' onmouseout='this.style.boxShadow=\"0 2px 8px rgba(0,0,0,0.08)\">";
-        echo "<div class='commande-header'>";
-        echo "<div>";
-        echo "<h3>{$restaurant_nom}</h3>";
-        echo "<p class='commande-date'>Commandé le {$date_formatee}</p>";
-        echo "</div>";
-        echo "<span class='commande-etat {$etat_class}>" . ucfirst($etat_affiche) . "</span>";
-        echo "</div>";
-
-        echo "<div class='commande-details'>";
-        echo "<p><strong>Restaurant :</strong> {$restaurant_nom}</p>";
-        echo "<p><strong>Adresse :</strong> {$restaurant_adresse}</p>";
-        echo "</div>";
-
-        echo "<div class='prix-total'>";
-        echo "Prix total : " . number_format($prix_total, 2, ',', ' ') . " €";
-        echo "</div>";
-        echo "</div>";
-        echo "</a>";
-    }
-} else {
-    echo "<div class='no-commandes'>";
-    echo "<p>😔 Vous n'avez pas encore d'historique de commandes.</p>";
-    echo "<p>Commencez par commander dans l'un de nos restaurants !</p>";
-    echo "</div>";
-}
-?>
-
-<a href="index.php" class="btn-retour">← Retour aux restaurants</a>
+</body>
+</html>

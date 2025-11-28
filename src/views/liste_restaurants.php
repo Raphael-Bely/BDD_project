@@ -31,7 +31,7 @@
             padding: 40px 20px;
         }
 
-        /* HEADER */
+        /* --- HEADER MODERNE --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -125,7 +125,7 @@
         .restaurant-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+            gap: 40px;
             padding-bottom: 50px;
             align-items: start;
         }
@@ -139,8 +139,10 @@
             display: flex;
             flex-direction: column;
             min-height: 180px;
-            text-decoration: none;
-            color: inherit;
+            
+            /* --- MODIFICATION ICI --- */
+            text-decoration: none; /* Enlève le soulignement du lien global */
+            color: inherit;        /* Garde la couleur noire */
         }
 
         .restaurant-card:hover {
@@ -158,7 +160,10 @@
             line-height: 1.3;
         }
         
-        .card-title:hover { color: var(--accent-color); }
+        /* On change la couleur du titre au survol de la CARTE entière */
+        .restaurant-card:hover .card-title { 
+            color: var(--accent-color); 
+        }
 
         .card-address {
             color: #7f8c8d;
@@ -210,7 +215,9 @@
 
                 <a href="logout.php" style="color: #e74c3c;">Se déconnecter</a>
             </div>
+
         <?php else: ?>
+
             <div class="header-actions">
                 <a href="login_invite.php" style="background-color: #27ae60; color: white; padding: 8px 12px; border-radius: 6px;">
                     👤 Invité
@@ -239,15 +246,12 @@
     <h2 class="section-title">
         <?php
         if (isset($titre_special)) {
-            // Cas GPS
             echo htmlspecialchars($titre_special);
         } 
         elseif ($stmt_cat && $row_cat = $stmt_cat->fetch(PDO::FETCH_ASSOC)) {
-            // Cas Catégorie
             echo "Restaurants : " . htmlspecialchars($row_cat['nom']);
         } 
         else {
-            // Cas par défaut
             echo "Nos Restaurants Partenaires 🍽️";
         }
         ?>
@@ -261,21 +265,23 @@
                 $nom = htmlspecialchars($row['nom']);
                 $adresse = htmlspecialchars($row['adresse']);
                 
-                echo "<div class='restaurant-card'>";
-                    // Titre cliquable
-                    echo "<a href='menu.php?id={$id}' class='card-title'>{$nom}</a>";
+                // --- CHANGEMENT ICI : On ouvre le lien sur toute la carte ---
+                echo "<a href='menu.php?id={$id}' class='restaurant-card'>";
+                
+                    // Le titre n'est plus un lien, mais un simple span/div
+                    echo "<span class='card-title'>{$nom}</span>";
                     
-                    // Affichage distance (Si mode GPS)
+                    // Affichage distance (Le code GPS de votre collègue)
                     if (isset($row['distance_km'])) {
                         $dist = number_format($row['distance_km'], 2); 
                         echo "<span class='distance-badge'>🏃 à {$dist} km</span>";
                     }
 
                     echo "<p class='card-address'>📍 {$adresse}</p>";
-                echo "</div>";
+                    
+                echo "</a>"; // On ferme le lien
             }
         } else {
-            // Message si aucun résultat
             echo "<div style='grid-column: 1 / -1; padding: 40px; background:white; border-radius:12px; text-align:center;'>";
             echo "<p style='font-size:1.2rem; color:#7f8c8d;'>Aucun restaurant trouvé pour cette recherche. 😔</p>";
             echo "<a href='index.php' style='color:var(--accent-color); font-weight:bold; text-decoration:none;'>Retourner à la liste complète</a>";
@@ -287,9 +293,9 @@
 </div>
 
 <script>
+    // Le script GPS reste inchangé
     function getLocation() {
         if (navigator.geolocation) {
-            // Demande la position
             navigator.geolocation.getCurrentPosition(showPosition, showError);
         } else {
             alert("La géolocalisation n'est pas supportée par ce navigateur.");
@@ -299,24 +305,22 @@
     function showPosition(position) {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-
-        // Redirection propre en GET
         window.location.href = "index.php?action=geo&lat=" + lat + "&lon=" + lon;
     }
 
     function showError(error) {
         switch(error.code) {
             case error.PERMISSION_DENIED:
-                alert("Vous avez refusé la géolocalisation. Impossible de trouver les restaurants proches.");
+                alert("Vous avez refusé la géolocalisation.");
                 break;
             case error.POSITION_UNAVAILABLE:
-                alert("Les informations de localisation sont indisponibles.");
+                alert("Position indisponible.");
                 break;
             case error.TIMEOUT:
-                alert("La demande de localisation a expiré.");
+                alert("Délai d'attente dépassé.");
                 break;
             default:
-                alert("Une erreur inconnue est survenue.");
+                alert("Erreur inconnue.");
         }
     }
 </script>
