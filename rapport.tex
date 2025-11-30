@@ -1,0 +1,289 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- PAQUETS ESSENTIELS ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel} % Typographie française
+\usepackage{geometry}      % Marges
+\geometry{hmargin=2.5cm,vmargin=2.5cm}
+\usepackage{graphicx}      % Images
+\usepackage{hyperref}      % Liens
+\usepackage{float}         % Positionnement H
+\usepackage{titlesec}      % Titres
+\usepackage{xcolor}        % Couleurs
+
+% --- CONFIGURATION DU CODE (SQL & PHP) ---
+\usepackage{listings}
+
+% Couleurs personnalisées
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Style global avec gestion des ACCENTS français
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    % C'est ici qu'on règle le problème des accents dans le code :
+    literate={é}{{\'e}}1 {è}{{\`e}}1 {à}{{\`a}}1 {ç}{{\c{c}}}1 {œ}{{\oe}}1 {ù}{{\`u}}1 {É}{{\'E}}1 {È}{{\`E}}1 {À}{{\`A}}1 {Ç}{{\c{C}}}1 {Œ}{{\OE}}1 {Ê}{{\^E}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+}
+\lstset{style=mystyle}
+
+% --- INFOS DU DOCUMENT ---
+\title{\textbf{Rapport de Projet SGBD : Gestion de Menus de Restaurants}}
+\author{
+    Abeille Thibault \\
+    Bély Raphaël \\
+    Guiot Numa \\
+    Picarel Enzo
+}
+\date{\today}
+
+\begin{document}
+
+% Page de titre
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table des matières
+\tableofcontents
+\newpage
+
+% ============================================================
+% PARTIE 1 : MODÉLISATION DES DONNÉES
+% ============================================================
+\section{Modélisation des données}
+
+\subsection{Description du contexte}
+
+\subsubsection{Contexte}
+
+Le but de ce projet est de concevoir une architecture de base de données solide et fonctionnelle, afin d’implémenter en PHP un site faisant le lien entre des restaurants souhaitant mettre leurs plats en ligne et les clients désireux de commander auprès d’eux. Concrètement, il s’agit d’une implémentation qui se rapproche d’un service de type UberEats ou Deliveroo. \\
+
+Pour améliorer l’expérience de chaque utilisateur, qu’il soit client ou restaurateur, plusieurs fonctionnalités ont été mises en place : affichage de restaurants selon une catégorie ou une distance donnée, accès à une page de statistiques sur les plats et les clients, ou encore gestion des programmes de fidélité via un système de points. La publication et la commande de formules représentent également un volet central du projet. \\
+
+Le site permet en plus d’informer les utilisateurs sur la composition nutritionnelle des produits, notamment leur teneur énergétique et en protéines. Enfin, les clients peuvent suivre l’avancement de leur commande à chaque étape, depuis la sélection des plats jusqu’à la réception, et consulter l’historique de leurs commandes passées.
+ 
+
+
+\subsubsection{Règles de gestion}
+Nous avons implémenté les règles de gestion suivantes pour garantir la cohérence des données :
+\paragraph{Restaurants et Carte}
+\begin{itemize}
+    \item \textbf{RG01 :} Un restaurant est défini par un nom, une adresse et une position géographique (GPS).
+    \item \textbf{RG02 :} Un restaurant peut appartenir à plusieurs catégories (ex: "Italien" et "Pizzeria"), mais une catégorie peut regrouper plusieurs restaurants.
+    \item \textbf{RG03 :} Un item (plat, boisson) appartient à un seul restaurant.
+    \item \textbf{RG04 :} Un item est classé dans une unique catégorie d'item (ex: "Entrée", "Plat", "Dessert").
+    \item \textbf{RG05 :} La composition d'un item est détaillée par une liste d'ingrédients avec leur quantité (en grammes) pour permettre le calcul nutritionnel.
+\end{itemize}
+
+\paragraph{Clients et fidélité}
+\begin{itemize}
+    \item \textbf{RG06 :} Un client est identifié par une adresse email unique.
+    \item \textbf{RG07 :} Via ses commandes, un client qui a un compte lié (au restaurant) cumule des points de fidélité indépendamment pour chaque restaurant 
+    \item \textbf{RG08 :} Des remises (pourcentage ou item offert) sont débloquées lorsque le client atteint certains seuils de points définis par le restaurant.
+    \item \textbf{RG09 :} (A FAIRE) Si le client à un compte lié au restaurant, il peut déposer un commentaire contenant une note, visible par les autres clients.
+\end{itemize}
+
+\paragraph{Commandes}
+\begin{itemize}
+    \item \textbf{RG10 :} Une commande est passée par un client auprès d'un unique restaurant (pas de commande multi-restaurants).
+    \item \textbf{RG11 :} Un client ne peut avoir qu'une seule commande "en cours" (non achevée) par restaurant à un instant T.
+    \item \textbf{RG12 :} Si un client ajoute un item alors qu'une commande est déjà ouverte pour ce restaurant, l'item est ajouté à la commande existante. Sinon, une nouvelle commande est créée.
+    \item \textbf{RG13 :} Si un client ajoute un item déjà présent dans sa commande, la quantité de cet item est incrémentée (pas de doublon de ligne).
+    \item \textbf{RG14 :} Le prix total d'une commande est calculé et mis à jour automatiquement (via Trigger) à chaque ajout, modification ou suppression d'item ou de formule.
+    \item \textbf{RG15 :} La suppression d'une commande entraîne la suppression automatique de tout son contenu (items et formules) via la contrainte ON DELETE CASCADE.
+\end{itemize}
+
+\paragraph{Formules (ou Menu)}
+\begin{itemize}
+    \item \textbf{RG16 :} Une formule est définie par un prix fixe et une structure de catégories (ex: 1 Entrée + 1 Plat).
+    \item \textbf{RG17 :} (A FAIRE) Une formule peut avoir des conditions de validité (jours de la semaine, horaires, midi/soir).
+    \item \textbf{RG18 :} Lors de l'achat d'une formule, les items choisis par le client sont liés à une instance spécifique de cette formule dans la commande, afin de distinguer les items "au menu" des items "à la carte
+\end{itemize}
+
+\paragraph{Géolocalisation}
+\begin{itemize}
+    \item \textbf{RG19 :} La recherche par proximité affiche uniquement les restaurants situés dans un rayon défini (par défaut 3km) autour de la position de l'utilisateur.
+    \item \textbf{RG20 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre (formule de géographie PostGIS).
+\end{itemize}
+
+
+
+
+\subsection{Modèle Entité-Association (E-A)}
+\textit{Insérez ici votre diagramme. Assurez-vous d'avoir le fichier image dans le même dossier.}
+
+\begin{figure}[H]
+    \centering
+    % Décommentez la ligne ci-dessous une fois que vous avez l'image :
+    % \includegraphics[width=0.9\textwidth]{diagramme_ea.png} 
+    \caption{Diagramme Entité-Association du projet}
+    \label{fig:mcd}
+\end{figure}
+
+\subsection{Opérations prévues et implémentées}
+Nous avons identifié et implémenté les opérations suivantes, classées par domaine fonctionnel :
+
+\begin{enumerate}
+    \item \textbf{Consultation et Navigation :}
+    \begin{itemize}
+        \item \textbf{Liste des restaurants :} Affichage paginé des restaurants avec possibilité de filtrage dynamique par catégorie (Italien, Fast-Food, etc.) via des requêtes SQL paramétrées.
+        \item \textbf{Consultation du menu :} Affichage hiérarchique des plats regroupés par catégorie (Entrées, Plats, Desserts).
+        \item \textbf{Détail nutritionnel :} Consultation de la composition d'un plat. Une requête SQL avec jointures (\texttt{INNER JOIN}) permet de récupérer la liste des ingrédients et de calculer les valeurs nutritionnelles (Kcal, Protéines) pondérées pour 100g de produit fini.
+    \end{itemize}
+
+    \item \textbf{Mise à jour et Gestion du Panier (Transactionnel) :}
+    \begin{itemize}
+        \item \textbf{Ajout d'items simples :} Utilisation d'une procédure stockée PL/pgSQL (\texttt{ajouter\_au\_panier}) qui gère automatiquement la création de la commande si elle n'existe pas encore (mécanisme de "panier actif") ou la mise à jour de la quantité si l'item est déjà présent.
+        \item \textbf{Tunnel de commande :} Pour les formules complexes, nous avons mis en place un processus étape par étape en PHP (via \texttt{\$\_SESSION}). L'enregistrement final utilise une transaction atomique pour insérer simultanément le choix de la formule et ses composants dans les tables \texttt{contenir\_formules} et \texttt{details\_commande\_formule}. Concrètement, le temps que l'opération ce termine, le résultat est stocké au fur et à mesure dans la mémoire vive du serveur. Il n'est stocké dans la base de donnée qu'à la fin, dans le but de ne pas polluer la base avec des données incomplète.
+        \item \textbf{Annulation :} Possibilité d'annuler une commande en cours, déclenchant une suppression en cascade (\texttt{ON DELETE CASCADE}) de tous les items associés.
+    \end{itemize}
+
+    \item \textbf{Automatisation et Statistiques :}
+    \begin{itemize}
+        \item \textbf{Calcul automatique du prix :} Implémentation d'un \textbf{Trigger} qui se déclenche après chaque insertion, modification ou suppression dans le panier. Il recalcule instantanément le montant total de la commande en additionnant le prix des items à la carte et des formules.
+        \item \textbf{Historique client :} Agrégation des données pour afficher l'historique des commandes passées avec leur état et leur contenu détaillé.
+    \end{itemize}
+
+    \item \textbf{Géolocalisation (PostGIS) :}
+    \begin{itemize}
+        \item \textbf{Recherche par proximité :} Utilisation de l'extension spatiale \textbf{PostGIS}. Nous utilisons les fonctions \texttt{ST\_MakePoint} pour créer des géométries à partir des coordonnées GPS et \texttt{ST\_DWithin} pour filtrer les restaurants dans un rayon précis (3km).
+        \item \textbf{Calcul de distance :} Affichage de la distance réelle entre le client et le restaurant grâce à la fonction \texttt{ST\_Distance} projetée sur la sphère terrestre (\texttt{geography}).
+    \end{itemize}
+\end{enumerate}
+
+% ============================================================
+% PARTIE 2 : SCHÉMA RELATIONNEL
+% ============================================================
+\section{Schéma Relationnel}
+
+\subsection{Passage au relationnel}
+Traduction du modèle E-A vers le relationnel (les clés primaires sont soulignées, les clés étrangères précédées d'un \#) :
+
+\begin{itemize}
+    \item \textbf{Restaurant} (\underline{restaurant\_id}, nom, adresse, coordonnees\_gps)
+    \item \textbf{Client} (\underline{client\_id}, nom, email, adresse)
+    \item \textbf{Commande} (\underline{commande\_id}, date\_commande, \#client\_id, \#restaurant\_id)
+    \item \textbf{Item} (\underline{item\_id}, nom, prix, \#restaurant\_id, \#categorie\_id)
+\end{itemize}
+
+\subsection{Contraintes et Dépendances}
+Nous avons appliqué des contraintes \texttt{ON DELETE CASCADE} pour garantir l'intégrité référentielle (ex: supprimer une commande supprime ses lignes de détail).
+
+\subsection{Normalisation (3NF)}
+Le schéma respecte la 3ème Forme Normale :
+\begin{itemize}
+    \item Tous les attributs sont atomiques (1NF).
+    \item Les attributs non-clés dépendent de toute la clé primaire (2NF).
+    \item Pas de dépendance transitive (3NF). Par exemple, l'adresse du restaurant dépend directement de \texttt{restaurant\_id}, pas d'un autre attribut.
+\end{itemize}
+
+% ============================================================
+% PARTIE 3 : IMPLANTATION (PostgreSQL)
+% ============================================================
+\section{Implantation}
+
+\subsection{Création de la base de données}
+SGBD utilisé : \textbf{PostgreSQL} avec extension \textbf{PostGIS}.
+
+\textbf{Extrait du script de création (create.sql) :}
+\begin{lstlisting}[language=SQL]
+CREATE TABLE restaurants (
+    restaurant_id SERIAL PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    adresse TEXT NOT NULL,
+    -- Utilisation de PostGIS pour la géolocalisation
+    coordonnees_gps GEOMETRY(Point, 4326) 
+);
+
+CREATE TABLE commandes (
+    commande_id SERIAL PRIMARY KEY,
+    est_acheve BOOLEAN DEFAULT FALSE,
+    client_id INT REFERENCES clients(client_id) ON DELETE CASCADE
+);
+\end{lstlisting}
+
+\subsection{Architecture Logicielle : Le choix du modèle MVC}
+
+Pour l'implémentation de l'interface utilisateur, nous avons opté pour l'architecture Modèle-Vue-Contrôleur (MVC). Ce motif de conception nous a permis de structurer notre application PHP native en séparant clairement les responsabilités, ce qui est crucial pour un projet mêlant des règles de gestion complexes (SQL/PLpgSQL) et une interface web interactive. \\
+
+Concrètement, l'application s'articule autour de trois composants distincts : 
+\begin{itemize} 
+    \item \textbf{Le Modèle (M) :} Il représente la couche d'accès aux données. Dans notre projet, les classes situées dans le dossier \texttt{models/} (ex: \texttt{Restaurant.php}, \texttt{Commandes.php}) encapsulent toute la logique SQL. Elles sont les seules autorisées à communiquer avec la base PostgreSQL via l'objet PDO. C'est ici que sont appelées nos procédures stockées complexes (comme \texttt{ajouter\_au\_panier}) et nos requêtes PostGIS, garantissant que le code SQL est centralisé et non dispersé dans les pages HTML. 
+    
+    \item \textbf{La Vue (V) :} Située dans le dossier \texttt{views/}, elle gère exclusivement la présentation. Elle reçoit les données brutes fournies par le contrôleur (sous forme de tableaux PHP) et les transforme en code HTML intelligible pour l'utilisateur (cartes de restaurants, tableaux de menus, formulaires). Elle ne contient aucune logique métier ni requête SQL, ce qui facilite la maintenance du design et l'intégration du CSS. 
+    
+    \item \textbf{Le Contrôleur (C) :} C'est le chef d'orchestre de l'application (nos fichiers à la racine \texttt{src/}, comme \texttt{index.php} ou \texttt{commande.php}). Il intercepte les requêtes HTTP de l'utilisateur (GET/POST), vérifie les permissions (gestion de session, authentification), sollicite le Modèle pour récupérer ou modifier les données, puis sélectionne la Vue appropriée pour afficher le résultat. \\
+\end{itemize} 
+
+\textbf{Justification et Avantages :} Le choix de MVC offre plusieurs avantages majeurs pour ce projet : 
+\begin{enumerate} 
+    \item \textbf{Séparation des préoccupations :} En isolant la logique métier de l'interface graphique, nous respectons le principe de responsabilité unique. Cela permet de modifier la structure de la base de données (ex: optimisation d'une requête SQL) sans impacter le code de l'interface utilisateur. 
+    
+    \item \textbf{Sécurité et Robustesse :} Le contrôleur agit comme un filtre de sécurité qui valide les entrées utilisateur (comme les coordonnées GPS ou les ID de commande) avant qu'elles n'atteignent la couche de données, réduisant les risques d'injections ou d'erreurs logiques. 
+    
+    \item \textbf{Travail collaboratif :} Cette structure a facilité le développement en équipe, permettant de travailler parallèlement sur le "Backend" (création des triggers et modèles PHP) et le "Frontend" (design des vues et expérience utilisateur) sans conflits de code majeurs.      
+\end{enumerate}
+
+\subsection{Implémentation des opérations}
+Exemple de requête complexe utilisant PostGIS pour la recherche par proximité :
+
+\begin{lstlisting}[language=SQL]
+SELECT nom, adresse, 
+-- Calcul de distance en Km
+(ST_Distance(
+    coordonnees_gps::geography, 
+    ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography
+) / 1000) as distance_km
+FROM restaurants
+WHERE ST_DWithin(
+    coordonnees_gps::geography,
+    ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography,
+    3000 -- Rayon de 3000 m
+);
+\end{lstlisting}
+
+% ============================================================
+% PARTIE 4 : UTILISATION ET INTERFACE
+% ============================================================
+\section{Utilisation}
+
+\subsection{Environnement d'exécution}
+\begin{itemize}
+    \item \textbf{Serveur :} Apache (Linux/Ubuntu)
+    \item \textbf{Base de données :} PostgreSQL 13+
+    \item \textbf{Langage :} PHP 7.4+ (sans framework lourd type Symfony)
+    \item \textbf{Extensions :} \texttt{php-pgsql} pour la connexion BDD.
+\end{itemize}
+
+\subsection{Notice d'utilisation}
+\begin{enumerate}
+    \item Importer la structure via \texttt{create.sql}.
+    \item Peupler la base via \texttt{insert.sql}.
+    \item Accéder à \texttt{index.php}.
+    \item Se connecter (ex: \texttt{alice.dupont@email.fr}).
+\end{enumerate}
+
+\subsection{Description des interfaces}
+
+\subsubsection{Tunnel de commande (Formules)}
+Le client configure sa formule étape par étape (Entrée $\rightarrow$ Plat $\rightarrow$ Dessert). Les choix sont stockés en \texttt{\$\_SESSION} et persistés en base uniquement à la fin via une transaction SQL atomique.
+
+\end{document}
