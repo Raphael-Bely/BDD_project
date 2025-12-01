@@ -45,6 +45,14 @@ class Client {
 
         return $stmt->fetch() !== false;
     }
+
+    public function deleteGuestAccount($client_id) {
+        // Sécurité supplémentaire : on vérifie que l'email ressemble bien à un invité
+        $query = Query::loadQuery('sql_requests/deleteGuestAccount.sql');
+        
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([$client_id]);
+    }
 }
 
 ?>

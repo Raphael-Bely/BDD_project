@@ -1,0 +1,1 @@
+INSERT INTO composer_formules (formule_id, categorie_item_id) VALUES (?, ?)

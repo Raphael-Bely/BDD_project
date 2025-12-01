@@ -29,22 +29,13 @@ $db = $database->getConnection();
 // Créer une instance du modèle Commande
 $commande = new Commande($db);
 
-// Vérifier que la commande appartient bien au client
-$query = "SELECT c.*, r.nom as restaurant_nom, r.adresse as restaurant_adresse 
-          FROM commandes c 
-          JOIN restaurants r ON c.restaurant_id = r.restaurant_id 
-          WHERE c.commande_id = :commande_id AND c.client_id = :client_id";
-$stmt = $db->prepare($query);
-$stmt->bindParam(':commande_id', $commande_id);
-$stmt->bindParam(':client_id', $client_id);
-$stmt->execute();
+$commande_info = $commandeModel->getCommandeDetails($commande_id, $client_id);
 
-if ($stmt->rowCount() == 0) {
+if (!$commande_info) {
+    // Si false, commande n'existe pas ou n'appartient pas au client
     header("Location: historique.php");
     exit();
 }
-
-$commande_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Récupérer les items de la commande
 $stmt_items = $commande->afficherItemCommande($commande_id);

@@ -316,7 +316,7 @@
                 // HEADER COMMANDE
                 echo "<div class='commande-header'>";
                     echo "<div>";
-                        echo "<div class='resto-name'>" . htmlspecialchars($restaurant_commande) . "</div>";
+                        echo "<div class='resto-name'>" . htmlspecialchars($commande['nom_restaurant']) . "</div>";
                         echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
                     echo "</div>";
 

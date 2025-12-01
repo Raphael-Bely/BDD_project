@@ -6,64 +6,60 @@ error_reporting(E_ALL);
 
 require_once './config/Database.php';
 require_once './models/Commandes.php';
+require_once './models/Clients.php'; // On a besoin du modèle Client pour la suppression
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commande_id'])) {
-    if (!isset($_SESSION['client_id'])) {
-        header("Location: login.php");
-        exit();
-    }
+// Vérification de base
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['commande_id'])) {
+    header("Location: suivi.php");
+    exit();
+}
 
-    $commande_id = $_POST['commande_id'];
-    $client_id = $_SESSION['client_id'];
+if (!isset($_SESSION['client_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-    $database = new Database();
-    $db = $database->getConnection();
-    $commande = new Commande($db);
+$commande_id = $_POST['commande_id'];
+$client_id = $_SESSION['client_id'];
 
-    // Vérifier que la commande appartient bien au client
-    $query = "SELECT client_id FROM commandes WHERE commande_id = :commande_id";
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':commande_id', $commande_id);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+// Connexions
+$database = new Database();
+$db = $database->getConnection();
+$commande = new Commande($db);
+$client = new Client($db);
 
-    if ($result && $result['client_id'] == $client_id) {
-        if ($commande->marquerCommeRecue($commande_id)) {
-            // Si c'est un invité, vérifier s'il a d'autres commandes en cours avant suppression
-            if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true) {
-                // Vérifier s'il reste des commandes en cours de livraison
-                $query_check = "SELECT COUNT(*) as nb_commandes FROM commandes 
-                                WHERE client_id = :client_id 
-                                AND etat = 'en_livraison'";
-                $stmt_check = $db->prepare($query_check);
-                $stmt_check->bindParam(':client_id', $client_id);
-                $stmt_check->execute();
-                $result_check = $stmt_check->fetch(PDO::FETCH_ASSOC);
+// 1. VÉRIFICATION SÉCURITÉ (Via le Modèle)
+if ($commande->isOrderOwnedByClient($commande_id, $client_id)) {
+    
+    // 2. ACTION PRINCIPALE : Marquer comme reçue
+    if ($commande->marquerCommeRecue($commande_id)) {
+        
+        // 3. LOGIQUE SPÉCIALE INVITÉ
+        if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true) {
+            
+            // On demande au modèle s'il reste des commandes actives
+            $nb_commandes_restantes = $commande->countOrdersEnCours($client_id);
 
-                // Supprimer le compte seulement s'il n'y a plus de commandes en cours
-                if ($result_check['nb_commandes'] == 0) {
-                    $query_delete = "DELETE FROM clients WHERE client_id = :client_id AND email LIKE 'invite_%@temp.local'";
-                    $stmt_delete = $db->prepare($query_delete);
-                    $stmt_delete->bindParam(':client_id', $client_id);
-                    $stmt_delete->execute();
+            // S'il n'y a plus de commandes en cours, on supprime le compte temporaire
+            if ($nb_commandes_restantes == 0) {
+                
+                // Appel au modèle Client pour la suppression
+                $client->deleteGuestAccount($client_id);
 
-                    // Détruire la session
-                    session_destroy();
-                    header("Location: index.php");
-                    exit();
-                } else {
-                    // Il reste des commandes en cours, rediriger vers le suivi
-                    header("Location: suivi.php");
-                    exit();
-                }
-            } else {
-                header("Location: suivi.php");
+                // Déconnexion et retour accueil
+                session_destroy();
+                header("Location: index.php?msg=guest_cleanup");
                 exit();
             }
         }
+        
+        // Cas standard (Client normal ou Invité avec d'autres commandes)
+        header("Location: suivi.php");
+        exit();
     }
 }
 
+// Si on arrive ici (échec vérif ou échec update), retour au suivi
 header("Location: suivi.php");
 exit();
 ?>

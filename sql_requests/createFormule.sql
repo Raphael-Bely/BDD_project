@@ -1,0 +1,1 @@
+INSERT INTO formules (nom, prix, restaurant_id) VALUES (?, ?, ?) RETURNING formule_id

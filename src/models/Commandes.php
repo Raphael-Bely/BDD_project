@@ -128,4 +128,33 @@ class Commande
 
         return $stmt->execute();
     }
+
+    public function getCommandeDetails($commande_id, $client_id) {
+        $query = Query::loadQuery('sql_requests/getCommandeDetails.sql');
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $commande_id);
+        $stmt->bindParam(2, $client_id);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function isOrderOwnedByClient($commande_id, $client_id) {
+        $query = Query::loadQuery('sql_requests/getClientWithCommande.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$commande_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return ($result && $result['client_id'] == $client_id);
+    }
+
+    public function countOrdersEnCours($client_id) {
+        // On considère qu'une commande est en cours si elle n'est ni 'reçue' ni 'annulée'
+        $query = Query::loadQuery('sql_requests/countOrderEnCours.sql');
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$client_id]);
+        return $stmt->fetchColumn();
+    }
 } ?>

@@ -1,41 +1,55 @@
 -- pour insérer les coordonnées géographique : ST_SetSRID(ST_MakePoint(x, y), 4326)
 
 
-INSERT INTO restaurants (nom, adresse, coordonnees_gps) VALUES
+INSERT INTO restaurants (nom, adresse, coordonnees_gps, restaurant_email, mot_de_passe) VALUES
 (
     'Le Procope', 
     '13 Rue de l''Ancienne Comédie, 75006 Paris', 
-    ST_SetSRID(ST_MakePoint(2.3387, 48.8530), 4326)
+    ST_SetSRID(ST_MakePoint(2.3387, 48.8530), 4326),
+    'procope@email.fr',
+    'admin'
 ),
 (
     'Pizzeria Popolare', 
     '111 Rue Réaumur, 33000 Bordeaux', 
-    ST_SetSRID(ST_MakePoint(2.3458, 48.8682), 4326)
+    ST_SetSRID(ST_MakePoint(2.3458, 48.8682), 4326),
+    'pizzeria.popolare@email.fr',
+    'admin'
 ),
 (
     'Le Petit Cambodge', 
     '20 Rue Alibert, 75010 Paris', 
-    ST_SetSRID(ST_MakePoint(2.3640, 48.8710), 4326)
+    ST_SetSRID(ST_MakePoint(2.3640, 48.8710), 4326),
+    'petit.cambodge@email.fr',
+    'admin'
 ),
 (
     'Du Pain et des Idées', 
     '34 Rue Yves Toudic, 75010 Paris', 
-    ST_SetSRID(ST_MakePoint(2.3614, 48.8708), 4326)
+    ST_SetSRID(ST_MakePoint(2.3614, 48.8708), 4326),
+    'pain.idees@email.fr',
+    'admin'
 ),
 (
     'L''Ambroisie', 
     '9 Place des Vosges, 75004 Paris', 
-    ST_SetSRID(ST_MakePoint(2.3656, 48.8554), 4326)
+    ST_SetSRID(ST_MakePoint(2.3656, 48.8554), 4326),
+    'ambroisie@email.fr',
+    'admin'
 ),
 (
     'Septime', 
     '80 Rue de Charonne, 75011 Paris', 
-    ST_SetSRID(ST_MakePoint(2.3804, 48.8530), 4326)
+    ST_SetSRID(ST_MakePoint(2.3804, 48.8530), 4326),
+    'septime@email.fr',
+    'admin'
 ),
 (
     'BAR de l''Enseirb',
     'Avenue du docteur Albert Schweitzer',
-    ST_SetSRID(ST_MakePoint(-0.6026647, 44.8073656), 4326)
+    ST_SetSRID(ST_MakePoint(-0.6026647, 44.8073656), 4326),
+    'bar.enseirb@email.fr',
+    'admin'
 );
 
 INSERT INTO categories_items (nom) VALUES
@@ -81,7 +95,8 @@ INSERT INTO items (nom, prix, est_disponible, restaurant_id, categorie_item_id) 
 -- Restaurant 6: Septime (Moderne Français)
 ('Menu Dégustation 5 temps', 110.00, TRUE, 6, 2),
 ('Accord Vins Naturels', 70.00, TRUE, 6, 5),
-('Plateau de Fromages Affinés', 22.00, TRUE, 6, 4);
+('Plateau de Fromages Affinés', 22.00, TRUE, 6, 4),
+('Carpaccio de Saint-Jacques', 40.00, TRUE, 6, 1);
 
 
 INSERT INTO proprietes_items (nom) VALUES

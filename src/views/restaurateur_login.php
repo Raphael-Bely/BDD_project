@@ -107,34 +107,30 @@
 
         <?php
         // Affichage du message d'erreur si la variable existe et n'est pas vide
-        if (isset($error_message) && !empty($error_message)): ?>
+        if (isset($error) && !empty($error)): ?>
             <div class="error-msg">
-                <?= htmlspecialchars($error_message) ?>
+                <?= htmlspecialchars($error) ?>
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST">
+        <form action="login_restaurateur.php" method="POST">
             <div class="form-group">
-                <label for="nom">Nom du compte :</label>
-                <input type="text" id="nom" name="nom" placeholder="Ex: Dupont" required>
+                <label for="nom">Nom du restaurant :</label>
+                <input type="text" id="nom" name="nom" placeholder="Ex: Burger King" required>
             </div>
 
             <div class="form-group">
                 <label for="email">Adresse Email :</label>
-                <input type="email" id="email" name="email" placeholder="Ex: jean.dupont@email.com" required>
+                <input type="email" id="email" name="email" placeholder="Ex: burger.king@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="mot_de_passe">Mot de passe :</label>
+                <input type="text" id="mot_de_passe" name="mot_de_passe" required>
             </div>
 
             <button type="submit">Se connecter</button>
         </form>
-
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="create_account.php" style="color: #3498db; text-decoration: none; font-size: 0.95em;">Créer un
-                compte</a> |
-            <a href="login_invite.php" style="color: #27ae60; text-decoration: none; font-size: 0.95em;">👤 Commander en
-                tant qu'invité</a> | 
-            <a href="login_restaurateur.php" style="color: #27ae60; text-decoration: none; font-size: 0.95em;"> Se connecter en tant que 
-                restaurateur</a>
-        </div>
 
         <a href="index.php" class="back-link">← Retour à l'accueil</a>
     </div>

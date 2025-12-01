@@ -5,7 +5,9 @@ CREATE TABLE restaurants
     restaurant_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     adresse VARCHAR(255) NOT NULL,
-    coordonnees_gps geography(POINT, 4326) NOT NULL
+    coordonnees_gps geography(POINT, 4326) NOT NULL,
+    restaurant_email VARCHAR(255) NOT NULL UNIQUE,
+    mot_de_passe VARCHAR(255)
 );
 
 CREATE INDEX idx_restaurants_coords ON restaurants USING GIST (coordonnees_gps);
@@ -176,7 +178,7 @@ CREATE TABLE contenir_formules (
 
 CREATE TABLE details_commande_formule (
     contenir_formule_id INT REFERENCES contenir_formules(id) ON DELETE CASCADE,
-    item_id INT REFERENCES items(item_id)
+    item_id INT REFERENCES items(item_id),
     PRIMARY KEY (contenir_formule_id, item_id)
 );
 

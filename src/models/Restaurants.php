@@ -1,6 +1,6 @@
 <?php
 require_once 'config/Database.php';
-require_once 'Query.php';
+require_once __DIR__ . '/Query.php';
 
 class Restaurant {
     private $conn;
@@ -104,6 +104,27 @@ class Restaurant {
 
         $stmt->execute();
         return $stmt;
+    }
+
+    public function login($email, $mot_de_passe) {
+        $query = Query::loadQuery('sql_requests/loginRestaurateur.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $email);
+        $stmt->execute();
+        $resto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resto && $mot_de_passe === $resto['mot_de_passe']) { 
+            return $resto;
+        }
+        return false;
+    }
+
+    public function getStats($restaurant_id) {
+        $query = Query::loadQuery('sql_requests/getRestaurantStats.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $restaurant_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

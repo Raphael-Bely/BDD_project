@@ -67,46 +67,44 @@ SELECT R.restaurant_id, R.nom, COUNT(Co.commande_id) AS nb_commandes
 
 --Chaque restaurant doit pouvoir consulter les statistiques de commandes de chaque plat par mois, pour l’année écoulée.
 
---On commence par superposer toutes les ventes/commandes des items en traitant leur provenance avec l'ajout d'un champ type_vente (nécessaire pour compter tout les items commandé)
 WITH All_item_sales AS (
     SELECT commande_id, item_id, 'Plat' AS type_vente
     FROM contenir_items
 
     UNION ALL 
 
-    SELECT commande_id, item_id, 'Menu' AS type_vente
-    FROM contenir_formules
+    SELECT cf.commande_id, dcf.item_id, 'Menu' AS type_vente
+    FROM contenir_formules cf
+    JOIN details_commande_formule dcf ON cf.id = dcf.contenir_formule_id
 )
 
---On sélectionne l'annee, le mois, le nombre de vente total, combien proviennent de Plat et combien proviennent de Menu et le revenu total du plat
-SELECT EXTRACT(YEAR FROM(C.date_commande)) AS annee, EXTRACT(MONTH FROM(C.date_commande)) AS mois, I.nom,
-    COUNT(*) as nb_total_ventes, SUM(CASE WHEN S.type_vente = 'Plat' THEN 1 ELSE 0 END) AS dont_x_plat,
+SELECT 
+    EXTRACT(YEAR FROM C.date_commande) AS annee, 
+    EXTRACT(MONTH FROM C.date_commande) AS mois, 
+    I.nom,
+    COUNT(*) as nb_total_ventes, 
+    SUM(CASE WHEN S.type_vente = 'Plat' THEN 1 ELSE 0 END) AS dont_x_plat,
     SUM(CASE WHEN S.type_vente = 'Menu' THEN 1 ELSE 0 END) AS dont_x_menu,
-    (COUNT(*) * I.prix) AS revenu
+    (COUNT(*) * I.prix) AS revenu_theorique 
 
---On regroupe nos ventes totales avec la table commande pour récuperer la date de commande et avec la table items pour récupérer nom, prix et restaurant
 FROM All_item_sales AS S
 JOIN commandes AS C ON S.commande_id = C.commande_id
 JOIN items AS I ON S.item_id = I.item_id
 
--- On filtre pour ne récupérer que les ventes/commandes de l'année passée et du restaurant sélectionné
 WHERE C.date_commande > (NOW() - INTERVAL '1 year')
-AND I.restaurant_id = 1 --À remplacer
+AND I.restaurant_id = ? 
 
--- On regroupe par plat, année et mois comme demandé dans la question
-GROUP BY I.item_id, I.nom, EXTRACT(YEAR FROM(C.date_commande)), EXTRACT(MONTH FROM((C.date_commande)))
-
--- (Facultatif) On peut trier pour avoir un résultat plus chronologique.
-ORDER BY I.nom, annee, mois;
+GROUP BY I.item_id, I.nom, annee, mois
+ORDER BY annee DESC, mois DESC, nb_total_ventes DESC;
 
 
 -- Un utilisateur qui renseigne sa position (GPS) peut consulter la liste des restaurtants disponibles, dans un rayon de 2km, rangés par ordre croissant de distance.
 
-SELECT R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint([longitude_utilisateur], [latitude_utilisateur]), 4326)) as distance_en_m
+SELECT R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint(?, ?), 4326)) as distance_en_m --longitude, latitude
 FROM restaurants as R
 WHERE ST_DWithin(
     R.coordonnees_gps,
-    ST_SetSRID(ST_MakePoint([longitude_utilisateur], [latitude_utilisateur]), 4326),
+    ST_SetSRID(ST_MakePoint(?, ?), 4326), --longitude, latitude
     2000
 )
 ORDER BY distance_en_m ASC;
