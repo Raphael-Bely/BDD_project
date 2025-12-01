@@ -124,17 +124,15 @@ Nous avons implémenté les règles de gestion suivantes pour garantir la cohér
     \item \textbf{RG20 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre (formule de géographie PostGIS).
 \end{itemize}
 
-
+\newpage
 
 
 \subsection{Modèle Entité-Association (E-A)}
-\textit{Insérez ici votre diagramme. Assurez-vous d'avoir le fichier image dans le même dossier.}
 
 \begin{figure}[H]
     \centering
-    % Décommentez la ligne ci-dessous une fois que vous avez l'image :
-    % \includegraphics[width=0.9\textwidth]{diagramme_ea.png} 
-    \caption{Diagramme Entité-Association du projet}
+    \includegraphics[width=1\textwidth]{schema_entite_association.jpg} 
+    \caption{Diagramme Entité-Association de la base de données}
     \label{fig:mcd}
 \end{figure}
 
@@ -175,14 +173,15 @@ Nous avons identifié et implémenté les opérations suivantes, classées par d
 \section{Schéma Relationnel}
 
 \subsection{Passage au relationnel}
-Traduction du modèle E-A vers le relationnel (les clés primaires sont soulignées, les clés étrangères précédées d'un \#) :
 
-\begin{itemize}
-    \item \textbf{Restaurant} (\underline{restaurant\_id}, nom, adresse, coordonnees\_gps)
-    \item \textbf{Client} (\underline{client\_id}, nom, email, adresse)
-    \item \textbf{Commande} (\underline{commande\_id}, date\_commande, \#client\_id, \#restaurant\_id)
-    \item \textbf{Item} (\underline{item\_id}, nom, prix, \#restaurant\_id, \#categorie\_id)
-\end{itemize}
+\begin{figure}[H] % Le [H] force l'image à rester ICI (nécessite \usepackage{float})
+    \centering
+    \includegraphics[width=1.1\textwidth]{schéma_relationnel.jpg}
+    
+    \caption{Diagramme UML du schéma relationnel de la base de données}
+    
+    \label{fig:uml}
+\end{figure}
 
 \subsection{Contraintes et Dépendances}
 Nous avons appliqué des contraintes \texttt{ON DELETE CASCADE} pour garantir l'intégrité référentielle (ex: supprimer une commande supprime ses lignes de détail).
@@ -203,22 +202,7 @@ Le schéma respecte la 3ème Forme Normale :
 \subsection{Création de la base de données}
 SGBD utilisé : \textbf{PostgreSQL} avec extension \textbf{PostGIS}.
 
-\textbf{Extrait du script de création (create.sql) :}
-\begin{lstlisting}[language=SQL]
-CREATE TABLE restaurants (
-    restaurant_id SERIAL PRIMARY KEY,
-    nom VARCHAR(255) NOT NULL,
-    adresse TEXT NOT NULL,
-    -- Utilisation de PostGIS pour la géolocalisation
-    coordonnees_gps GEOMETRY(Point, 4326) 
-);
 
-CREATE TABLE commandes (
-    commande_id SERIAL PRIMARY KEY,
-    est_acheve BOOLEAN DEFAULT FALSE,
-    client_id INT REFERENCES clients(client_id) ON DELETE CASCADE
-);
-\end{lstlisting}
 
 \subsection{Architecture Logicielle : Le choix du modèle MVC}
 
@@ -273,17 +257,15 @@ WHERE ST_DWithin(
     \item \textbf{Extensions :} \texttt{php-pgsql} pour la connexion BDD.
 \end{itemize}
 
-\subsection{Notice d'utilisation}
+\subsection{Notice d'utilisation pendant le développement}
 \begin{enumerate}
-    \item Importer la structure via \texttt{create.sql}.
+    \item Importer la structure via \texttt{create.sql} sur sa base de données (nous avons utilisé les bases personnelles de l'ENSEIRB).
     \item Peupler la base via \texttt{insert.sql}.
-    \item Accéder à \texttt{index.php}.
-    \item Se connecter (ex: \texttt{alice.dupont@email.fr}).
+    \item Accéder au site via l'url suivant https://zzz.tabeille001.bordeaux-inp.fr/src/index.php en s'assurant d'être connecté sur le réseaux de Bordeaux INP
+    \item Enfin, se connecter/créer un compte en utilisant un email (ex ou utiliser le mode invité.
 \end{enumerate}
 
 \subsection{Description des interfaces}
 
-\subsubsection{Tunnel de commande (Formules)}
-Le client configure sa formule étape par étape (Entrée $\rightarrow$ Plat $\rightarrow$ Dessert). Les choix sont stockés en \texttt{\$\_SESSION} et persistés en base uniquement à la fin via une transaction SQL atomique.
 
 \end{document}

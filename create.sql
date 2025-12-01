@@ -177,6 +177,7 @@ CREATE TABLE contenir_formules (
 CREATE TABLE details_commande_formule (
     contenir_formule_id INT REFERENCES contenir_formules(id) ON DELETE CASCADE,
     item_id INT REFERENCES items(item_id)
+    PRIMARY KEY (contenir_formule_id, item_id)
 );
 
 CREATE TABLE remises
