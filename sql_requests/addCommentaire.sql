@@ -1,0 +1,1 @@
+INSERT INTO commentaires (date_commentaire, contenu, note, fidelite_id) VALUES (NOW(), ?, ?, ?)

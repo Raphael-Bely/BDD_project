@@ -103,13 +103,18 @@ class Fidelite {
 
         } catch (Exception $e) {
             $this->conn->rollBack();
-            // Mode DEBUG (À retirer en production)
-            echo "<pre>";
-            echo "<h1>ERREUR SQL DÉTECTÉE</h1>";
-            echo "<strong>Message : </strong>" . $e->getMessage() . "<br>";
-            echo "</pre>";
-            die();
+            return false;
         }
+    }
+
+    public function getAvisByRestaurant($restaurant_id) {
+        $query = Query::loadQuery('sql_requests/getCommentairesByRestaurant.sql');
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $restaurant_id);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

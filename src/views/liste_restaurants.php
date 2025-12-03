@@ -324,29 +324,33 @@
                 $nb_avis = isset($row['nb_avis']) ? $row['nb_avis'] : 0;
 
                 echo "<div class='restaurant-card'>";
-                    
-                    echo "<div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:10px;'>";
+                    echo "<div style='margin-bottom: 5px;'>"; 
+                        echo "<a href='menu.php?id={$id}' class='card-link-wrapper'>";
+                            echo "<span class='card-title' style='font-size: 1.3em;'>{$nom}</span>";
+                        echo "</a>";
+                    echo "</div>";
+
+                    echo "<div style='display:flex; align-items:center; margin-bottom:15px;'>";
                         
-                        echo "<a href='menu.php?id={$id}' class='card-link-wrapper' style='flex-grow:1;'>";
-                            echo "<span class='card-title'>{$nom}</span>";
+                        echo "<a href='avis_restaurant.php?id={$id}' style='text-decoration:none; display:flex; align-items:center; color:inherit;' title='Voir les avis'>";
                             
-                            echo "<div style='margin-top:4px;'>";
-                            echo "<span class='stars'>";
+                            echo "<span class='stars' style='margin:0;'>"; 
                             for($i=1; $i<=5; $i++) {
                                 echo ($i <= round($note)) ? "★" : "<span class='stars-empty'>☆</span>";
                             }
                             echo "</span>";
-                            echo "<span style='font-weight:bold; color:#2c3e50; margin-left:8px;'>" . number_format($note, 1) . " / 5</span>";
-                            echo "<span style='font-size:0.8rem; color:#999; margin-left:5px;'>(" . $nb_avis . ")</span>";
-                            echo "</div>";
+
+                            echo "<span style='font-weight:bold; color:#2c3e50; margin-left:8px; font-size:0.95em;'>" . number_format($note, 1) . " / 5</span>";
+                            
+                            echo "<span style='font-size:0.85em; color:#95a5a6; margin-left:5px;'>(" . $nb_avis . " avis)</span>";
                         echo "</a>";
 
                         if ($est_connecte) {
-                            echo "<button class='btn-avis' onclick='openAvisModal($id, \"" . addslashes($nom) . "\")' title='Laisser un avis'>✎</button>";
+                            echo "<button class='btn-avis' onclick='openAvisModal($id, \"" . addslashes($nom) . "\")' title='Laisser un avis' style='margin-left:15px;'>✎</button>";
                         }
 
                     echo "</div>";
-
+                    
                     echo "<a href='menu.php?id={$id}' class='card-link-wrapper'>";
                         
                         if (isset($row['distance_km'])) {
