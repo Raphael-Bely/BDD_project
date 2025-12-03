@@ -358,6 +358,7 @@ INSERT INTO avoir_categories_restaurants (restaurant_id, categorie_restaurant_id
 
 
 INSERT INTO clients (nom, email, adresse) VALUES
+('admin', 'admin@email.fr', 'Système'),
 ('Alice Dupont', 'alice.dupont@email.fr', '12 Rue de la Paix, 75002 Paris'),
 ('Benoit Martin', 'benoit.martin@email.com', '45 Avenue du Prado, 13008 Marseille'),
 ('Claire Petit', 'claire.petit@email.net', '8 Rue Sainte-Catherine, 33000 Bordeaux'),
@@ -534,20 +535,20 @@ INSERT INTO avoir_conditions_formules (formule_id, condition_formule_id) VALUES
 -- ==============================================================================
 
 -- COMMANDE 1: Client 1 (Alice) achète 1 item à la Pizzeria (Resto 2)
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (1, NOW() - INTERVAL '10 days', 12.00, 1, 2);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (1, NOW() - INTERVAL '10 days', 12.00, 'acheve', 1, 2);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (1, 6, 1);
 
 
 -- COMMANDE 2: Client 3 (Claire) achète 2 items au Petit Cambodge (Resto 3)
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (2, NOW() - INTERVAL '9 days', 52.00, 3, 3);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (2, NOW() - INTERVAL '9 days', 52.00, 'acheve', 3, 3);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (2, 10, 2), (2, 11, 2);
 
 
 -- COMMANDE 3: Client 4 (David) achète 1 'Menu Procope' (Formule 1)
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (3, NOW() - INTERVAL '8 days', 55.00, 4, 1);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (3, NOW() - INTERVAL '8 days', 55.00, 'acheve', 4, 1);
 
 -- 1. Création du "Ticket Formule" (ID 1) -> ATTENTION : on utilise la colonne 'id'
 INSERT INTO contenir_formules (id, commande_id, formule_id) VALUES (1, 3, 1);
@@ -557,8 +558,8 @@ INSERT INTO details_commande_formule (contenir_formule_id, item_id) VALUES
 
 
 -- COMMANDE 4: Client 5 (Elsa) achète 1 'Formule Petit Déjeuner'
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (4, NOW() - INTERVAL '8 days', 6.00, 5, 4);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (4, NOW() - INTERVAL '8 days', 6.00, 'acheve', 5, 4);
 
 -- 1. Création du "Ticket Formule" (ID 2)
 INSERT INTO contenir_formules (id, commande_id, formule_id) VALUES (2, 4, 4);
@@ -568,8 +569,8 @@ INSERT INTO details_commande_formule (contenir_formule_id, item_id) VALUES
 
 
 -- COMMANDE 5: Client 2 (Benoit) achète 1 'Menu Déjeuner Septime' ET 1 item à la carte
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (5, NOW() - INTERVAL '7 days', 135.00, 2, 6);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (5, NOW() - INTERVAL '7 days', 135.00, 'acheve', 2, 6);
 
 -- Partie Formule (ID 3)
 INSERT INTO contenir_formules (id, commande_id, formule_id) VALUES (3, 5, 5);
@@ -581,8 +582,8 @@ INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (5, 22, 1);
 
 
 -- COMMANDE 6: Client 10 (Julien) achète 1 'Menu Popolare' ET 1 sauce
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (6, NOW() - INTERVAL '6 days', 23.50, 10, 2);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (6, NOW() - INTERVAL '6 days', 23.50, 'acheve', 10, 2);
 
 -- Partie Formule (ID 4)
 INSERT INTO contenir_formules (id, commande_id, formule_id) VALUES (4, 6, 2);
@@ -594,26 +595,26 @@ INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (6, 9, 1);
 
 
 -- COMMANDE 7: Client 1 (Alice) items à la carte
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (7, NOW() - INTERVAL '5 days', 32.50, 1, 2);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (7, NOW() - INTERVAL '5 days', 32.50, 'acheve', 1, 2);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (7, 6, 2), (7, 7, 1);
 
 
 -- COMMANDE 8: Client 6 (Fabien) item à L'Ambroisie
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (8, NOW() - INTERVAL '5 days', 85.00, 6, 5);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (8, NOW() - INTERVAL '5 days', 85.00, 'acheve', 6, 5);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (8, 18, 1);
 
 
 -- COMMANDE 9: Client 7 (Garance) items à la Boulangerie
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (9, NOW() - INTERVAL '4 days', 6.60, 7, 4);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (9, NOW() - INTERVAL '4 days', 6.60, 'acheve', 7, 4);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (9, 14, 1), (9, 15, 1);
 
 
 -- COMMANDE 10: Client 7 (Garance) achète 1 'Menu Bo Bun'
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (10, NOW() - INTERVAL '3 days', 21.50, 7, 3);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (10, NOW() - INTERVAL '3 days', 21.50, 'acheve', 7, 3);
 
 -- Formule (ID 5)
 INSERT INTO contenir_formules (id, commande_id, formule_id) VALUES (5, 10, 3);
@@ -622,14 +623,14 @@ INSERT INTO details_commande_formule (contenir_formule_id, item_id) VALUES
 
 
 -- COMMANDE 11: Client 8 (Hugo) items au Procope
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (11, NOW() - INTERVAL '2 days', 77.00, 8, 1);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (11, NOW() - INTERVAL '2 days', 77.00, 'acheve', 8, 1);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (11, 2, 1), (11, 4, 1);
 
 
 -- COMMANDE 12: Client 9 (Ines) item à Septime
-INSERT INTO commandes (commande_id, date_commande, prix_total_remise, client_id, restaurant_id)
-VALUES (12, NOW() - INTERVAL '1 day', 22.00, 9, 6);
+INSERT INTO commandes (commande_id, date_commande, prix_total_remise, etat, client_id, restaurant_id)
+VALUES (12, NOW() - INTERVAL '1 day', 22.00, 'acheve', 9, 6);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (12, 23, 1);
 
 
