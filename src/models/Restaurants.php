@@ -126,5 +126,14 @@ class Restaurant {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function suppressItemCommande($commande_id,$item_id) {
+        $query = "SELECT supprimer_au_panier(?::INTEGER, ?::INTEGER)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $commande_id,PDO::PARAM_INT);
+        $stmt->bindParam(2, $item_id,PDO::PARAM_INT);
+        $stmt->execute();
+        return;
+    }
 }
 ?>
