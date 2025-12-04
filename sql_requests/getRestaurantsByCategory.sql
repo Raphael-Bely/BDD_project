@@ -1,3 +1,6 @@
-SELECT r.* FROM restaurants r
+-- Get all restaurants belonging to a specific category
+
+SELECT r.* 
+FROM restaurants r
 JOIN avoir_categories_restaurants acr ON r.restaurant_id = acr.restaurant_id
-WHERE acr.categorie_restaurant_id = ?;
+WHERE acr.categorie_restaurant_id = ?

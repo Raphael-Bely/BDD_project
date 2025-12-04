@@ -1,1 +1,5 @@
-SELECT categorie_item_id, nom FROM categories_items ORDER BY categorie_item_id;
+-- Get all item categories
+
+SELECT categorie_item_id, nom 
+FROM categories_items 
+ORDER BY categorie_item_id

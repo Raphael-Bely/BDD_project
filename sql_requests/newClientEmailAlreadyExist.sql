@@ -1,4 +1,6 @@
+-- Check if a client email already exists in the database
+
 SELECT client_id
-from clients
-where email = ?
-LIMIT 1;
+FROM clients
+WHERE email = ?
+LIMIT 1
