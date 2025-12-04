@@ -12,7 +12,7 @@ class Commande
 
     public function getCurrentCommande($client_id)
     {
-        $query = Query::loadQuery('sql_requests/getCurrentCommande.sql');
+        $query = Query::loadQuery('sql_requests/getCurrentOrder.sql');
 
         $stmt = $this->conn->prepare($query);
 
@@ -25,7 +25,7 @@ class Commande
 
     public function suppressCurrentCommande($commande_id)
     {
-        $query = Query::loadQuery('sql_requests/suppressCurrentCommande.sql');
+        $query = Query::loadQuery('sql_requests/deleteCurrentOrder.sql');
 
         $stmt = $this->conn->prepare($query);
 
@@ -38,7 +38,7 @@ class Commande
 
     public function afficherItemCommande($commande_id)
     {
-        $query = Query::loadQuery('sql_requests/getAllItemCommande.sql');
+        $query = Query::loadQuery('sql_requests/getAllItemsInOrder.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $commande_id);
@@ -49,7 +49,7 @@ class Commande
 
     public function afficherFormulesCommande($commande_id)
     {
-        $query = Query::loadQuery('sql_requests/getAllFormulesCommandes.sql');
+        $query = Query::loadQuery('sql_requests/getAllFormulasInOrder.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $commande_id);
@@ -89,7 +89,7 @@ class Commande
 
     public function confirmOrder($commande_id)
     {
-        $query = Query::loadQuery('sql_requests/confirmCommande.sql');
+        $query = Query::loadQuery('sql_requests/confirmOrder.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $commande_id);
@@ -99,7 +99,7 @@ class Commande
 
     public function getHistoriqueCommandes($client_id)
     {
-        $query = Query::loadQuery('sql_requests/getHistoriqueCommandes.sql');
+        $query = Query::loadQuery('sql_requests/getOrderHistory.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':client_id', $client_id);
@@ -110,7 +110,7 @@ class Commande
 
     public function getCommandesEnCours($client_id)
     {
-        $query = Query::loadQuery('sql_requests/getCommandesEnCours.sql');
+        $query = Query::loadQuery('sql_requests/getOngoingOrders.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':client_id', $client_id);
@@ -129,9 +129,10 @@ class Commande
         return $stmt->execute();
     }
 
-    public function getCommandeDetails($commande_id, $client_id) {
-        $query = Query::loadQuery('sql_requests/getCommandeDetails.sql');
-        
+    public function getCommandeDetails($commande_id, $client_id)
+    {
+        $query = Query::loadQuery('sql_requests/getOrderDetails.sql');
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $commande_id);
         $stmt->bindParam(2, $client_id);
@@ -140,8 +141,9 @@ class Commande
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function isOrderOwnedByClient($commande_id, $client_id) {
-        $query = Query::loadQuery('sql_requests/getClientWithCommande.sql');
+    public function isOrderOwnedByClient($commande_id, $client_id)
+    {
+        $query = Query::loadQuery('sql_requests/getClientWithOrder.sql');
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$commande_id]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -149,10 +151,11 @@ class Commande
         return ($result && $result['client_id'] == $client_id);
     }
 
-    public function countOrdersEnCours($client_id) {
+    public function countOrdersEnCours($client_id)
+    {
         // On considère qu'une commande est en cours si elle n'est ni 'reçue' ni 'annulée'
-        $query = Query::loadQuery('sql_requests/countOrderEnCours.sql');
-        
+        $query = Query::loadQuery('sql_requests/countOngoingOrders.sql');
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$client_id]);
         return $stmt->fetchColumn();

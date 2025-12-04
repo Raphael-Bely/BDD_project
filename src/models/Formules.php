@@ -1,36 +1,41 @@
 <?php
-require_once __DIR__ . '/Query.php'; 
+require_once __DIR__ . '/Query.php';
 
-class Formule {
+class Formule
+{
     private $conn;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function getComposition($formule_id) {
+    public function getComposition($formule_id)
+    {
         $query = Query::loadQuery('sql_requests/getComposition.sql');
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$formule_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function createFormule($nom, $prix, $resto_id, $categories_ids) {
+    public function createFormule($nom, $prix, $resto_id, $categories_ids)
+    {
 
         // Transaction atomique, soit tout ce passe bien soit rien ne se passe
         try {
             // Ecriture "au brouillon"
             $this->conn->beginTransaction();
 
-            $query = Query::loadQuery("sql_requests/createFormule.sql");
+            $query = Query::loadQuery("sql_requests/createFormula.sql");
             $stmt = $this->conn->prepare($query);
             $stmt->execute([$nom, $prix, $resto_id]);
             $formule_id = $stmt->fetchColumn();
 
-            if (!$formule_id) throw new Exception("Erreur création formule");
+            if (!$formule_id)
+                throw new Exception("Erreur création formule");
 
-            $sql_comp = Query::loadQuery('sql_requests/linkFormuleAndCategorieItem.sql');
+            $sql_comp = Query::loadQuery('sql_requests/linkFormulaAndItemCategory.sql');
             $stmt_comp = $this->conn->prepare($sql_comp);
 
             foreach ($categories_ids as $cat_id) {

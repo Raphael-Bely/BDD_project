@@ -2,45 +2,50 @@
 require_once 'config/Database.php';
 require_once __DIR__ . '/Query.php';
 
-class Restaurant {
+class Restaurant
+{
     private $conn;
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function getAllRestaurants() {
+    public function getAllRestaurants()
+    {
 
         $query = Query::loadQuery('sql_requests/getAllRestaurants.sql');
         $stmt = $this->conn->prepare($query);
 
         $stmt->execute();
 
-        return $stmt; 
+        return $stmt;
     }
 
-    public function getByID($restaurant_id) {
+    public function getByID($restaurant_id)
+    {
         $query = Query::loadQuery('sql_requests/getRestaurantById.sql');
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1,$restaurant_id);
+        $stmt->bindParam(1, $restaurant_id);
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row;
     }
 
-    public function getFormules($restaurant_id) {
-        $query = Query::loadQuery('sql_requests/getFormulesByRestaurantId.sql');
+    public function getFormules($restaurant_id)
+    {
+        $query = Query::loadQuery('sql_requests/getFormulasByRestaurantId.sql');
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1,$restaurant_id);
+        $stmt->bindParam(1, $restaurant_id);
         $stmt->execute();
 
         return $stmt;
     }
 
-    public function getCurrentCommandFromRestaurant($client_id,$restaurant_id)
+    public function getCurrentCommandFromRestaurant($client_id, $restaurant_id)
     {
-        $query = Query::loadQuery('sql_requests/getCurrentCommandFromRestaurant.sql');
+        $query = Query::loadQuery('sql_requests/getCurrentOrderFromRestaurant.sql');
 
         $stmt = $this->conn->prepare($query);
 
@@ -52,37 +57,41 @@ class Restaurant {
         return $stmt;
     }
 
-    public function getAllCategories() {
+    public function getAllCategories()
+    {
         $query = Query::loadQuery('sql_requests/getAllCategories.sql');
         $stmt = $this->conn->prepare($query);
-        
+
         $stmt->execute();
         return $stmt;
     }
 
-    public function getCategoriesById($cat_id) {
+    public function getCategoriesById($cat_id)
+    {
         $query = Query::loadQuery('sql_requests/getCategorieById.sql');
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1,$cat_id);
+        $stmt->bindParam(1, $cat_id);
 
         $stmt->execute();
         return $stmt;
     }
-    
-    public function getByCategory($category_id) {
+
+    public function getByCategory($category_id)
+    {
         $query = Query::loadQuery('sql_requests/getRestaurantsByCategory.sql');
         $stmt = $this->conn->prepare($query);
-        
+
         $stmt->bindParam(1, $category_id);
-        
+
         $stmt->execute();
         return $stmt;
     }
 
-    public function getCurrentCommandeFromRestaurant($client_id, $restaurant_id) {
-        $query = Query::loadQuery('sql_requests/getCurrentCommandFromRestaurant.sql');
+    public function getCurrentCommandeFromRestaurant($client_id, $restaurant_id)
+    {
+        $query = Query::loadQuery('sql_requests/getCurrentOrderFromRestaurant.sql');
         $stmt = $this->conn->prepare($query);
-        
+
         $stmt->bindParam(1, $client_id);
         $stmt->bindParam(2, $restaurant_id);
 
@@ -90,7 +99,8 @@ class Restaurant {
         return $stmt;
     }
 
-    public function getRestaurantsAround($lat, $lon, $rayon_km) {
+    public function getRestaurantsAround($lat, $lon, $rayon_km)
+    {
         $query = Query::loadQuery('sql_requests/getRestaurantAround.sql');
         $stmt = $this->conn->prepare($query);
 
@@ -106,20 +116,22 @@ class Restaurant {
         return $stmt;
     }
 
-    public function login($email, $mot_de_passe) {
-        $query = Query::loadQuery('sql_requests/loginRestaurateur.sql');
+    public function login($email, $mot_de_passe)
+    {
+        $query = Query::loadQuery('sql_requests/restaurantLogin.sql');
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $email);
         $stmt->execute();
         $resto = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($resto && $mot_de_passe === $resto['mot_de_passe']) { 
+        if ($resto && $mot_de_passe === $resto['mot_de_passe']) {
             return $resto;
         }
         return false;
     }
 
-    public function getStats($restaurant_id) {
+    public function getStats($restaurant_id)
+    {
         $query = Query::loadQuery('sql_requests/getRestaurantStats.sql');
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $restaurant_id);
@@ -127,35 +139,38 @@ class Restaurant {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function suppressItemCommande($commande_id,$item_id) {
+    public function suppressItemCommande($commande_id, $item_id)
+    {
         $query = "SELECT supprimer_au_panier(?::INTEGER, ?::INTEGER)";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $commande_id,PDO::PARAM_INT);
-        $stmt->bindParam(2, $item_id,PDO::PARAM_INT);
+        $stmt->bindParam(1, $commande_id, PDO::PARAM_INT);
+        $stmt->bindParam(2, $item_id, PDO::PARAM_INT);
         $stmt->execute();
         return;
     }
 
-    public function getHoraires($restaurant_id) {
-        $query = Query::loadQuery('sql_requests/getHoraire.sql');
-        
+    public function getHoraires($restaurant_id)
+    {
+        $query = Query::loadQuery('sql_requests/getOpeningHours.sql');
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$restaurant_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addHoraire($restaurant_id, $jour, $debut, $fin) {
+    public function addHoraire($restaurant_id, $jour, $debut, $fin)
+    {
         try {
             $this->conn->beginTransaction();
 
             // 1. Créer le créneau horaire
-            $sql1 = Query::loadQuery('sql_requests/createHoraire.sql');
+            $sql1 = Query::loadQuery('sql_requests/createOpeningHours.sql');
             $stmt1 = $this->conn->prepare($sql1);
             $stmt1->execute([$jour, $debut, $fin]);
             $horaire_id = $stmt1->fetchColumn();
 
             // 2. Lier ce créneau au restaurant
-            $sql2 = Query::loadQuery('sql_requests/linkHoraireToRestaurant');
+            $sql2 = Query::loadQuery('sql_requests/linkScheduleToRestaurant.sql');
             $stmt2 = $this->conn->prepare($sql2);
             $stmt2->execute([$restaurant_id, $horaire_id]);
 
@@ -167,8 +182,9 @@ class Restaurant {
         }
     }
 
-    public function deleteHoraire($restaurant_id, $horaire_id) {
-        $sql = Query::loadQuery('sql_requests/deleteLinkHoraireRestaurant.sql');
+    public function deleteHoraire($restaurant_id, $horaire_id)
+    {
+        $sql = Query::loadQuery('sql_requests/deleteRestaurantScheduleLink.sql');
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([$restaurant_id, $horaire_id]);
     }
