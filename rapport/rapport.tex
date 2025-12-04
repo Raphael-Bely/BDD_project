@@ -316,7 +316,70 @@ EXECUTE FUNCTION update_prix_commande_func();
     \item Enfin, se connecter/créer un compte en utilisant un email ou utiliser le mode invité.
 \end{enumerate}
 
-\subsection{Description des interfaces}
+\section{Description des Interfaces et Fonctionnalités Implémentées}
+
+L'application est divisée en trois interfaces distinctes, accessibles selon le rôle de l'utilisateur (Client, Invité, Restaurateur). 
+
+\subsection{Interface Client (Utilisateur Connecté)}
+L'interface client offre l'expérience la plus complète. Après authentification, l'utilisateur a accès à un tableau de bord personnalisé.
+
+\subsubsection{Recherche et Sélection de Restaurant}
+La page d'accueil présente la liste des restaurants partenaires. Plusieurs fonctionnalités de recherche avancée ont été implémentées :
+\begin{itemize}
+    \item \textbf{Géolocalisation (PostGIS) :} Un bouton permet de trier les restaurants par proximité. L'application récupère la position GPS du navigateur, envoie les coordonnées au serveur, et une requête spatiale (\texttt{ST\_Distance}) calcule la distance exacte en kilomètres, affichée dynamiquement sur chaque carte.
+    \item \textbf{Filtres par catégorie :} Possibilité de filtrer par type de cuisine (Italien, Fast-Food, Gastronomique, etc.).
+    \item \textbf{État d'ouverture :} Grâce à une jointure complexe avec la table \texttt{horaires\_ouverture}, l'interface indique visuellement si un restaurant est actuellement \textbf{ouvert} ou \textbf{fermé}.
+\end{itemize}
+
+\subsubsection{Système d'Avis et Notation}
+Afin de guider les utilisateurs, un système de notation communautaire a été développé :
+\begin{itemize}
+    \item \textbf{Dépôt d'avis certifiés :} Seuls les clients ayant déjà effectué une commande dans un restaurant (vérification d'antériorité via la table \texttt{fidelite}) ont le droit de laisser une note (1 à 5 étoiles) et un commentaire.
+    \item \textbf{Visibilité publique :} Les notes et les commentaires sont publics et visibles par tous les utilisateurs (y compris les invités).
+    \item \textbf{Calcul automatique :} La note moyenne affichée sur la carte du restaurant est recalculée instantanément à chaque nouvel avis grâce à un Trigger SQL, garantissant une information toujours à jour sans alourdir les requêtes de lecture.
+\end{itemize}
+
+\subsubsection{Prise de Commande par Plats et par Formules}
+La navigation dans le menu d'un restaurant propose deux modes de commande :
+\begin{enumerate}
+    \item \textbf{À la carte :} Ajout direct d'items au panier. Si l'item possède des variantes (sauces, accompagnements), un système de liste déroulante dynamique permet d'ajouter ces compléments.
+    \item \textbf{Par Formule :} Pour les menus complexes (ex: Entrée + Plat + Dessert), nous avons développé un \textit{configurateur étape par étape}. L'utilisateur ne voit que les plats éligibles pour l'étape en cours. La validation finale déclenche une transaction SQL atomique qui lie tous les items choisis à une instance unique de formule.
+\end{enumerate}
+Au fur et à mesure que la commande est créer, un petit aperçu de celle-ci est visible sur la droite de l'écran. Cela permet à l'utilisateur de savoir ce qu'il a commandé.
+
+\subsubsection{Fidélité et Récompenses}
+Un système de gamification récompense les clients réguliers :
+\begin{itemize}
+    \item Chaque commande rapporte des points de fidélité spécifiques au restaurant.
+    \item \textbf{Déblocage de récompenses :} Le système vérifie automatiquement le solde de points. Si les seuils sont atteints, le client peut bénéficier d'items offerts ou de remises en pourcentage sur sa prochaine commande.
+\end{itemize}
+
+\subsubsection{Suivi et Historique}
+Les commandes sont validés (On imagine qu'un paiement peut être mis en place à ce moment là) dans la section \textbf{panier}.
+Puis, le client peut valider la réception dans la section \textbf{suivie}, il atteste avoir bien reçu la commande.
+Enfin, les information des la commandes sont passé dans un \textbf{historique} que le client peut consulter à tout moment.
+
+\subsection{Interface Invité (Guest)}
+Afin de réduire la friction à l'entrée, un mode "Invité" a été développé.
+\begin{itemize}
+    \item \textbf{Compte temporaire :} Un compte client est créé à la volée avec une durée de vie limitée. Il n'a donc pas accès à un historique, mais il peut quand même valider sa commande et confirmer sa réception.
+    \item \textbf{Limitations :} L'invité a accès à toutes les fonctions de commande et peut consulter les avis laissés par les autres, mais il ne peut pas poster de commentaire ni cumuler de points de fidélité.
+    \item \textbf{Nettoyage :} Une logique métier détecte la fin du cycle de commande et supprime automatiquement les données du compte invité.
+\end{itemize}
+
+\subsection{Interface Restaurateur (Back-Office)}
+Cette interface sécurisée est dédiée aux professionnels pour la gestion de leur établissement.
+
+\subsubsection{Gestion du Menu}
+Le restaurateur dispose d'outils lui permettant la création/insertion ainsi que certaines modification et suppression  :
+\begin{itemize}
+    \item \textbf{Création de Plats :} Ajout de nouveaux items avec définition du prix, de la catégorie et association possible avec des compléments existants.
+    \item \textbf{Création de Formules :} Interface permettant de définir un prix global, de composer la structure du menu (ex: choisir les catégories "Entrée" et "Plat") et de définir des conditions de validité (jours, horaires).
+    \item \textbf{Gestion des Horaires :} Ajout et suppression de créneaux horaires d'ouverture.
+\end{itemize}
+
+\subsubsection{Tableau de Bord Statistique}
+Une page de statistiques exploitant des requêtes d'agrégation complexes permet au restaurateur de visualiser son chiffre d'affaires mensuel et la répartition des ventes (carte vs formules).
 
 
 \end{document}
