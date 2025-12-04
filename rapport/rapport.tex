@@ -184,15 +184,32 @@ Nous avons identifié et implémenté les opérations suivantes, classées par d
 \end{figure}
 
 \subsection{Contraintes et Dépendances}
-Nous avons appliqué des contraintes \texttt{ON DELETE CASCADE} pour garantir l'intégrité référentielle (ex: supprimer une commande supprime ses lignes de détail).
+
+L'intégrité et la cohérence de la base de données sont assurées par plusieurs mécanismes clés :
+
+\begin{itemize}
+    \item \textbf{Clés et Unicité :} L'utilisation de clés primaires artificielles (\texttt{SERIAL}) et de contraintes \texttt{UNIQUE} (sur les emails clients et restaurants) garantit l'identification unique de chaque entité.
+    
+    \item \textbf{Intégrité Référentielle :} Un réseau strict de clés étrangères relie les tables, empêchant, par exemple, la création d'un plat sans restaurant associé.
+    
+    \item \textbf{Suppression en Cascade (\texttt{ON DELETE CASCADE}) :} Cette clause est systématisée pour automatiser le nettoyage. La suppression d'un restaurant entraîne instantanément celle de ses cartes, horaires et commandes, évitant les données orphelines.
+    
+    \item \textbf{Validité des Données :} Des contraintes de domaine comme \texttt{CHECK} (ex : note comprise entre 1 et 5) et l'usage de types \texttt{ENUM} (ex : état d'une commande) verrouillent les formats de saisie.
+    
+    \item \textbf{Triggers Métier :} La cohérence dynamique est déléguée à des triggers PL/pgSQL. Ils recalculent automatiquement les prix totaux lors des modifications de panier (\texttt{trg\_update\_prix\_items}) et mettent à jour les notes moyennes des restaurants (\texttt{trg\_calcul\_note}) en temps réel.
+\end{itemize}
 
 \subsection{Normalisation (3NF)}
-Le schéma respecte la 3ème Forme Normale :
+
+Le schéma respecte la Troisième Forme Normale (3NF) pour garantir l'absence de redondance :
+
 \begin{itemize}
-    \item Tous les attributs sont atomiques (1NF).
-    \item Les attributs non-clés dépendent de toute la clé primaire (2NF).
-    \item Pas de dépendance transitive (3NF). Par exemple, l'adresse du restaurant dépend directement de \texttt{restaurant\_id}, pas d'un autre attribut.
+    \item \textbf{1NF (Atomicité) :} Chaque attribut contient une valeur unique. La composition des plats n'est pas une liste, mais est gérée via la table d'association \texttt{composer}.
+    \item \textbf{2NF (Dépendance totale) :} Tout attribut non-clé dépend de la clé primaire entière. Dans \texttt{contenir\_items}, la \texttt{quantite} dépend bien du couple \texttt{(commande\_id, item\_id)}.
+    \item \textbf{3NF (Dépendance directe) :} Aucun attribut non-clé ne dépend d'un autre attribut non-clé. Par exemple, l'adresse d'un client dépend uniquement de son \texttt{client\_id}.
 \end{itemize}
+
+\textit{Note :} Bien que le champ \texttt{prix\_total\_remise} dans la table \texttt{commandes} soit une donnée calculable (dérivée), nous avons choisi de le stocker pour des raisons de performance. La cohérence avec la 3NF est maintenue artificiellement grâce à l'utilisation stricte de triggers qui garantissent que ce champ reflète toujours exactement la somme des items.
 
 % ============================================================
 % PARTIE 3 : IMPLANTATION (PostgreSQL)
@@ -227,21 +244,55 @@ Concrètement, l'application s'articule autour de trois composants distincts :
 \end{enumerate}
 
 \subsection{Implémentation des opérations}
-Exemple de requête complexe utilisant PostGIS pour la recherche par proximité :
 
-\begin{lstlisting}[language=SQL]
-SELECT nom, adresse, 
--- Calcul de distance en Km
-(ST_Distance(
-    coordonnees_gps::geography, 
-    ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography
-) / 1000) as distance_km
-FROM restaurants
-WHERE ST_DWithin(
-    coordonnees_gps::geography,
-    ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography,
-    3000 -- Rayon de 3000 m
-);
+Nous avons choisi de déporter une grande partie de la logique métier directement dans la base de données via des procédures stockées PL/pgSQL. Cela garantit la rapidité d'exécution et l'intégrité des données.
+
+\subsubsection{Gestion transactionnelle du panier}
+
+L'ajout d'une formule au panier est une opération complexe qui nécessite plusieurs étapes : vérifier si une commande existe (ou la créer), ajouter la formule, puis lier chaque item choisi (entrée, plat, dessert) à cette formule spécifique.
+
+Pour réaliser cela en une seule transaction atomique, nous avons créé la fonction \texttt{ajouter\_formule\_complete}. Elle utilise la fonction \texttt{unnest} pour transformer un tableau d'identifiants PHP en lignes SQL insérables.
+
+\begin{lstlisting}[language=SQL, caption=Fonction d'ajout de formule avec gestion des tableaux]
+CREATE OR REPLACE FUNCTION ajouter_formule_complete(
+    p_client_id INT,
+    p_restaurant_id INT,
+    p_formule_id INT,
+    p_items_ids INT[] -- Tableau des IDs des items choisis
+) RETURNS BOOLEAN AS $$
+DECLARE
+    v_commande_id INT;
+    v_contenir_formule_id INT;
+BEGIN
+    -- 1. Récupération ou création intelligente de la commande
+    v_commande_id := obtenir_ou_creer_commande(p_client_id, p_restaurant_id);
+
+    -- 2. Ajout de la formule
+    INSERT INTO contenir_formules (commande_id, formule_id)
+    VALUES (v_commande_id, p_formule_id)
+    RETURNING id INTO v_contenir_formule_id; 
+
+    -- 3. Insertion en masse des items liés via unnest()
+    INSERT INTO details_commande_formule (contenir_formule_id, item_id)
+    SELECT v_contenir_formule_id, unnest(p_items_ids);
+
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+\end{lstlisting}
+
+\subsubsection{Automatisation du calcul du prix (Triggers)}
+
+Afin d'éviter les incohérences de montants, le prix total de la commande n'est jamais calculé côté PHP. Un \textbf{Trigger} se déclenche automatiquement après chaque ajout, modification ou suppression dans le panier (que ce soit un item seul ou une formule).
+
+Ce mécanisme recalcule la somme de tous les éléments et met à jour le champ \texttt{prix\_total\_remise} de la commande en temps réel.
+
+\begin{lstlisting}[language=SQL, caption=Trigger de mise à jour automatique du prix]
+-- Trigger déclenché à chaque modification du contenu du panier
+CREATE TRIGGER trg_update_prix_items
+AFTER INSERT OR UPDATE OR DELETE ON contenir_items
+FOR EACH ROW
+EXECUTE FUNCTION update_prix_commande_func();
 \end{lstlisting}
 
 % ============================================================
@@ -262,7 +313,7 @@ WHERE ST_DWithin(
     \item Importer la structure via \texttt{create.sql} sur sa base de données (nous avons utilisé les bases personnelles de l'ENSEIRB).
     \item Peupler la base via \texttt{insert.sql}.
     \item Accéder au site via l'url suivant https://zzz.tabeille001.bordeaux-inp.fr/src/index.php en s'assurant d'être connecté sur le réseaux de Bordeaux INP
-    \item Enfin, se connecter/créer un compte en utilisant un email (ex ou utiliser le mode invité.
+    \item Enfin, se connecter/créer un compte en utilisant un email ou utiliser le mode invité.
 \end{enumerate}
 
 \subsection{Description des interfaces}
