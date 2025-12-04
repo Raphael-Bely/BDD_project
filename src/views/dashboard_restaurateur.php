@@ -135,6 +135,9 @@
         <a href="espace_restaurateur.php?page=formules" class="nav-link <?= $page == 'formules' ? 'active' : '' ?>">
             🍱 Gérer les formules
         </a>
+        <a href="espace_restaurateur.php?page=horaires" class="nav-link <?= $page == 'horaires' ? 'active' : '' ?>">
+            🕒 Horaires d'ouverture
+        </a>
 
         <a href="logout.php" class="nav-link logout-btn">Déconnexion</a>
     </div>
@@ -271,6 +274,77 @@
 
                     <button type="submit" class="btn-submit">Créer la formule</button>
                 </form>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($page === 'horaires'): ?>
+            <h1 class="page-title">Mes Horaires d'ouverture</h1>
+            
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                
+                <div class="card" style="flex:1; min-width:300px;">
+                    <h3>Semaine Type</h3>
+                    <?php if (empty($liste_horaires)): ?>
+                        <p>Aucun horaire défini. Le restaurant apparaît comme fermé.</p>
+                    <?php else: ?>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Jour</th>
+                                    <th>Ouverture</th>
+                                    <th>Fermeture</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($liste_horaires as $h): ?>
+                                <tr>
+                                    <td><strong><?= $jours_semaine[$h['jour_semaine']] ?></strong></td>
+                                    <td><?= substr($h['heure_ouverture'], 0, 5) ?></td>
+                                    <td><?= substr($h['heure_fermeture'], 0, 5) ?></td>
+                                    <td>
+                                        <a href="espace_restaurateur.php?page=horaires&action=del_horaire&id=<?= $h['horaire_ouverture_id'] ?>" 
+                                           style="color:#e74c3c; text-decoration:none; font-weight:bold;"
+                                           onclick="return confirm('Supprimer ce créneau ?');">
+                                           🗑️
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+
+                <div class="card" style="flex:1; min-width:300px; height:fit-content;">
+                    <h3>Ajouter un créneau</h3>
+                    <form method="POST" action="espace_restaurateur.php?page=horaires">
+                        <input type="hidden" name="action" value="add_horaire">
+
+                        <div class="form-group">
+                            <label>Jour :</label>
+                            <select name="jour" required>
+                                <?php foreach($jours_semaine as $num => $nom): ?>
+                                    <option value="<?= $num ?>"><?= $nom ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; gap:10px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>De :</label>
+                                <input type="time" name="debut" required>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>À :</label>
+                                <input type="time" name="fin" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit" style="width:100%;">Ajouter</button>
+                    </form>
+                </div>
+
             </div>
         <?php endif; ?>
         

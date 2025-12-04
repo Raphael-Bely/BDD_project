@@ -135,5 +135,42 @@ class Restaurant {
         $stmt->execute();
         return;
     }
+
+    public function getHoraires($restaurant_id) {
+        $query = Query::loadQuery('sql_requests/getHoraire.sql');
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$restaurant_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addHoraire($restaurant_id, $jour, $debut, $fin) {
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Créer le créneau horaire
+            $sql1 = Query::loadQuery('sql_requests/createHoraire.sql');
+            $stmt1 = $this->conn->prepare($sql1);
+            $stmt1->execute([$jour, $debut, $fin]);
+            $horaire_id = $stmt1->fetchColumn();
+
+            // 2. Lier ce créneau au restaurant
+            $sql2 = Query::loadQuery('sql_requests/linkHoraireToRestaurant');
+            $stmt2 = $this->conn->prepare($sql2);
+            $stmt2->execute([$restaurant_id, $horaire_id]);
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return false;
+        }
+    }
+
+    public function deleteHoraire($restaurant_id, $horaire_id) {
+        $sql = Query::loadQuery('sql_requests/deleteLinkHoraireRestaurant.sql');
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$restaurant_id, $horaire_id]);
+    }
 }
 ?>

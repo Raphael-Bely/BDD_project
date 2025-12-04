@@ -71,6 +71,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// --- TRAITEMENT : AJOUTER UN HORAIRE ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_horaire') {
+    $jour = intval($_POST['jour']);
+    $debut = $_POST['debut'];
+    $fin = $_POST['fin'];
+
+    if ($jour >= 1 && $jour <= 7 && !empty($debut) && !empty($fin)) {
+        if ($restaurant->addHoraire($restaurant_id, $jour, $debut, $fin)) {
+            $message_succes = "Nouveau créneau ajouté.";
+        } else {
+            $message_erreur = "Erreur lors de l'ajout.";
+        }
+    }
+}
+
+// --- TRAITEMENT : SUPPRIMER UN HORAIRE ---
+if (isset($_GET['action']) && $_GET['action'] === 'del_horaire' && isset($_GET['id'])) {
+    if ($restaurant->deleteHoraire($restaurant_id, $_GET['id'])) {
+        $message_succes = "Créneau supprimé.";
+    } else {
+        $message_erreur = "Impossible de supprimer ce créneau.";
+    }
+    header("Location: espace_restaurateur.php?page=horaires"); 
+    exit(); 
+}
+
 // --- PRÉPARATION DES DONNÉES POUR LA VUE ---
 
 // A. Si on est sur la page STATISTIQUES
@@ -92,6 +118,19 @@ if ($page === 'formules') {
     // On réutilise la méthode du modèle Item pour avoir toutes les catégories dispos
     $stmt_cat = $item->getItemFromAllCat();
     $categories_items = $stmt_cat->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// D. Si on est sur la page HORAIRES on a besoin des horaires du resto
+
+$liste_horaires = [];
+if ($page === 'horaires') {
+    $liste_horaires = $restaurant->getHoraires($restaurant_id);
+    
+    // Petite astuce pour afficher les noms des jours
+    $jours_semaine = [
+        1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 
+        5 => 'Vendredi', 6 => 'Samedi', 7 => 'Dimanche'
+    ];
 }
 
 // 3. CHARGEMENT DE LA VUE
