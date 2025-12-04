@@ -8,3 +8,5 @@
 *.out
 *.bbl
 *.pdf
+*.yml
+Dockerfile
