@@ -40,12 +40,14 @@ if ($lat && $lon) {
     $titre_special = "Restaurants autour de vous (3km) 📍";
 
 } elseif (isset($current_cat)) {
-    $stmt = $restaurant->getByCategory($current_cat);
-
-    $stmt_cat = $restaurant->getCategoriesById($current_cat);
+    $stmt_open = $restaurant->getOpenedByCategory($current_cat);
+    $stmt_close = $restaurant->getClosedByCategory($current_cat);
+    
+    $cat = $restaurant->getCategoriesById($current_cat);
 
 } else {
-    $stmt = $restaurant->getAllRestaurants();
+    $stmt_open = $restaurant->getAllOpenedRestaurants();
+    $stmt_close = $restaurant->getAllClosedRestaurants();
 }
 
 include 'views/liste_restaurants.php';

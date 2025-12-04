@@ -10,10 +10,21 @@ class Restaurant
         $this->conn = $db;
     }
 
-    public function getAllRestaurants()
+    public function getAllOpenedRestaurants()
     {
 
-        $query = Query::loadQuery('sql_requests/getAllRestaurants.sql');
+        $query = Query::loadQuery('sql_requests/getAllOpenedRestaurants.sql');
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    public function getAllClosedRestaurants()
+    {
+
+        $query = Query::loadQuery('sql_requests/getAllClosedRestaurants.sql');
         $stmt = $this->conn->prepare($query);
 
         $stmt->execute();
@@ -75,14 +86,18 @@ class Restaurant
         $stmt->execute();
         return $stmt;
     }
-
-    public function getByCategory($category_id)
-    {
-        $query = Query::loadQuery('sql_requests/getRestaurantsByCategory.sql');
+    public function getOpenedByCategory($category_id) {
+        $query = Query::loadQuery('sql_requests/getOpenedByCategory.sql');
         $stmt = $this->conn->prepare($query);
-
         $stmt->bindParam(1, $category_id);
+        $stmt->execute();
+        return $stmt;
+    }
 
+    public function getClosedByCategory($category_id) {
+        $query = Query::loadQuery('sql_requests/getClosedByCategory.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $category_id);
         $stmt->execute();
         return $stmt;
     }
