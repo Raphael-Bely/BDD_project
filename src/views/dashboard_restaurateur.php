@@ -272,6 +272,52 @@
                         <small style="color:#777; display:block; margin-top:5px;">L'ordre de sélection déterminera l'ordre des étapes pour le client.</small>
                     </div>
 
+                    <div class="form-group">
+                        <label>Disponibilité (Optionnel) :</label>
+                        <small style="color:#777;">Ajoutez les créneaux où cette formule est active.</small>
+                        
+                        <table id="table-conditions" style="width:100%; margin-top:5px; border-collapse:collapse;">
+                            </table>
+
+                        <button type="button" onclick="ajouterLigneCondition()" style="background:#eee; border:1px solid #ddd; padding:5px 10px; margin-top:5px; cursor:pointer; border-radius:4px;">
+                            + Ajouter un créneau
+                        </button>
+                    </div>
+
+                    <script>
+                        // Liste des jours pour le select
+                        const jours = {1:'Lundi', 2:'Mardi', 3:'Mercredi', 4:'Jeudi', 5:'Vendredi', 6:'Samedi', 7:'Dimanche'};
+
+                        function ajouterLigneCondition() {
+                            const table = document.getElementById('table-conditions');
+                            const row = table.insertRow();
+                            
+                            // Cellule Jour
+                            const cell1 = row.insertCell(0);
+                            let selectHtml = '<select name="cond_jour[]" style="padding:5px;">';
+                            for (const [k, v] of Object.entries(jours)) {
+                                selectHtml += `<option value="${k}">${v}</option>`;
+                            }
+                            selectHtml += '</select>';
+                            cell1.innerHTML = selectHtml;
+
+                            // Cellule Début
+                            const cell2 = row.insertCell(1);
+                            cell2.innerHTML = '<input type="time" name="cond_debut[]" required style="padding:5px;">';
+
+                            // Cellule Fin
+                            const cell3 = row.insertCell(2);
+                            cell3.innerHTML = '<input type="time" name="cond_fin[]" required style="padding:5px;">';
+
+                            // Cellule Suppression
+                            const cell4 = row.insertCell(3);
+                            cell4.innerHTML = '<button type="button" onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer;">&times;</button>';
+                        }
+                        
+                        // On ajoute une ligne par défaut au chargement (optionnel)
+                        // ajouterLigneCondition(); 
+                    </script>
+
                     <button type="submit" class="btn-submit">Créer la formule</button>
                 </form>
             </div>

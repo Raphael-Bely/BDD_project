@@ -1,0 +1,1 @@
+INSERT INTO avoir_conditions_formules (formule_id, condition_formule_id) VALUES (?, ?)

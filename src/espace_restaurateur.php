@@ -18,6 +18,7 @@ if (!isset($_SESSION['restaurant_id'])) {
 $db = (new Database())->getConnection();
 $restaurant = new Restaurant($db);
 $item = new Plat($db);
+$formule = new Formule($db);
 $restaurant_id = $_SESSION['restaurant_id'];
 $restaurant_nom = $_SESSION['restaurant_nom'];
 
@@ -54,20 +55,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     $nom = trim($_POST['nom']);
     $prix = floatval($_POST['prix']);
-    // On récupère le tableau des catégories cochées
     $cats_ids = isset($_POST['categories']) ? $_POST['categories'] : [];
+    
+    $conditions_data = [];
+    if (isset($_POST['cond_jour']) && is_array($_POST['cond_jour'])) {
+        for ($i = 0; $i < count($_POST['cond_jour']); $i++) {
+            // On ne garde que les lignes complètes
+            if (!empty($_POST['cond_debut'][$i]) && !empty($_POST['cond_fin'][$i])) {
+                $conditions_data[] = [
+                    'jour'  => intval($_POST['cond_jour'][$i]),
+                    'debut' => $_POST['cond_debut'][$i],
+                    'fin'   => $_POST['cond_fin'][$i]
+                ];
+            }
+        }
+    }
 
     if (!empty($nom) && $prix > 0 && count($cats_ids) > 0) {
         
-        $formule = new Formule($db);
-        
-        if ($formule->createFormule($nom, $prix, $restaurant_id, $cats_ids)) {
-            $message_succes = "La formule \"$nom\" a été créée avec succès !";
+        // Appel de la nouvelle méthode
+        if ($formule->createFormule($nom, $prix, $restaurant_id, $cats_ids, $conditions_data)) {
+            $message_succes = "Formule créée avec succès !";
         } else {
-            $message_erreur = "Erreur lors de la création de la formule.";
+            $message_erreur = "Erreur création.";
         }
     } else {
-        $message_erreur = "Veuillez remplir le nom, le prix et sélectionner au moins une catégorie.";
+        $message_erreur = "Veuillez remplir le nom, le prix et la composition.";
     }
 }
 
@@ -97,6 +110,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'del_horaire' && isset($_GET['
     exit(); 
 }
 
+
 // --- PRÉPARATION DES DONNÉES POUR LA VUE ---
 
 // A. Si on est sur la page STATISTIQUES
@@ -118,6 +132,8 @@ if ($page === 'formules') {
     // On réutilise la méthode du modèle Item pour avoir toutes les catégories dispos
     $stmt_cat = $item->getItemFromAllCat();
     $categories_items = $stmt_cat->fetchAll(PDO::FETCH_ASSOC);
+    $jours = [1=>'Lundi', 2=>'Mardi', 3=>'Mercredi', 4=>'Jeudi', 5=>'Vendredi', 6=>'Samedi', 7=>'Dimanche'];
+    $conditions_dispo = $formule->getAllConditions();
 }
 
 // D. Si on est sur la page HORAIRES on a besoin des horaires du resto
