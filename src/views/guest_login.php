@@ -146,6 +146,12 @@
                     autocomplete="street-address">
             </div>
 
+            <div class="form-group">
+                <label for="telephone">Téléphone *</label>
+                <input type="text" id="telephone" name="telephone" placeholder="Votre numéro de téléphone" required
+                    autocomplete="tel">
+            </div>
+
             <button type="submit">🛒 Commencer à commander</button>
         </form>
 
