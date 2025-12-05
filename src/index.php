@@ -35,14 +35,14 @@ $stmt_cat = null;
 $current_cat_info = null;
 
 if ($lat && $lon) {
-    $stmt = $restaurant->getRestaurantsAround($lat, $lon, 3); // Rayon de 3km
+    $stmt = $restaurant->getRestaurantsAround($lat, $lon, 2); // Rayon de 2km
     $current_cat = null;
-    $titre_special = "Restaurants autour de vous (3km) 📍";
+    $titre_special = "Restaurants autour de vous (2km) 📍";
 
 } elseif (isset($current_cat)) {
     $stmt_open = $restaurant->getOpenedByCategory($current_cat);
     $stmt_close = $restaurant->getClosedByCategory($current_cat);
-    
+
     $cat = $restaurant->getCategoriesById($current_cat);
 
 } else {
