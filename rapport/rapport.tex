@@ -167,6 +167,31 @@ Nous avons identifié et implémenté les opérations suivantes, classées par d
     \end{itemize}
 \end{enumerate}
 
+\subsection{Évolution par rapport au premier modèle}
+
+Lors de la phase de développement, nous avons identifié une limitation importante dans notre première ébauche concernant la gestion des formules (menus).
+
+Comme le montre la Figure \ref{fig:mcd_v1}, notre modélisation initiale de l'entité \texttt{Formules} était incomplète. Elle était reliée au restaurant (\textit{offrir}) et à la commande (\textit{contenir}), mais elle manquait de définition structurelle.
+
+\paragraph{Problème identifié :}
+Il était impossible de définir de quoi était composée une formule type (par exemple : "Une Entrée au choix + Un Plat au choix"). Le système ne pouvait pas savoir quels types de plats le client devait choisir pour valider sa formule.
+
+\paragraph{Correction apportée :}
+Pour pallier ce manque, nous avons ajouté l'association \textbf{\texttt{composer\_formule}} (visible sur le schéma final) reliant l'entité \texttt{Formules} à l'entité \texttt{Categories\_items}.
+
+Cette modification structurelle permet désormais de :
+\begin{itemize}
+    \item Définir la "recette" d'un menu (ex: 1 item de catégorie "Boisson" + 1 item de catégorie "Plat").
+    \item Implémenter la logique du "Tunnel de commande" en guidant l'utilisateur étape par étape pour choisir les bons items dans les bonnes catégories.
+\end{itemize}
+\begin{figure}[h!]
+    \centering
+    % Assurez-vous que le fichier est bien dans votre dossier projet
+    \includegraphics[width=0.9\textwidth]{diagramme_entité_association_v1.pdf}
+    \caption{Première version du diagramme Entité-Association}
+    \label{fig:mcd_v1}
+\end{figure}
+
 % ============================================================
 % PARTIE 2 : SCHÉMA RELATIONNEL
 % ============================================================
