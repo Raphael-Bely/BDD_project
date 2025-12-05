@@ -78,8 +78,9 @@ Le but de ce projet est de concevoir une architecture de base de données solide
 
 Pour améliorer l’expérience de chaque utilisateur, qu’il soit client ou restaurateur, plusieurs fonctionnalités ont été mises en place : affichage de restaurants selon une catégorie ou une distance donnée, accès à une page de statistiques sur les plats et les clients, ou encore gestion des programmes de fidélité via un système de points. La publication et la commande de formules représentent également un volet central du projet. \\
 
-Le site permet en plus d’informer les utilisateurs sur la composition nutritionnelle des produits, notamment leur teneur énergétique et en protéines. Enfin, les clients peuvent suivre l’avancement de leur commande à chaque étape, depuis la sélection des plats jusqu’à la réception, et consulter l’historique de leurs commandes passées.
- 
+Le site permet en plus d’informer les utilisateurs sur la composition nutritionnelle des produits, notamment leur teneur énergétique et en protéines. Les clients peuvent suivre l’avancement de leur commande à chaque étape, depuis la sélection des plats jusqu’à la réception, et consulter l’historique de leurs commandes passées. \\
+
+Enfin, une interface restaurateur a été ajoutée, permettant au restaurant de gérer ses plats, formules et horaires d'ouverture ainsi que de voir quelques statistiques.
 
 
 \subsubsection{Règles de gestion}
@@ -88,7 +89,7 @@ Nous avons implémenté les règles de gestion suivantes pour garantir la cohér
 \begin{itemize}
     \item \textbf{RG01 :} Un restaurant est défini par un nom, une adresse et une position géographique (GPS).
     \item \textbf{RG02 :} Un restaurant peut appartenir à plusieurs catégories (ex: "Italien" et "Pizzeria"), mais une catégorie peut regrouper plusieurs restaurants.
-    \item \textbf{RG03 :} Un item (plat, boisson) appartient à un seul restaurant.
+    \item \textbf{RG03 :} Un item appartient à un seul restaurant.
     \item \textbf{RG04 :} Un item est classé dans une unique catégorie d'item (ex: "Entrée", "Plat", "Dessert").
     \item \textbf{RG05 :} La composition d'un item est détaillée par une liste d'ingrédients avec leur quantité (en grammes) pour permettre le calcul nutritionnel.
 \end{itemize}
@@ -96,32 +97,32 @@ Nous avons implémenté les règles de gestion suivantes pour garantir la cohér
 \paragraph{Clients et fidélité}
 \begin{itemize}
     \item \textbf{RG06 :} Un client est identifié par une adresse email unique.
-    \item \textbf{RG07 :} Via ses commandes, un client qui a un compte lié (au restaurant) cumule des points de fidélité indépendamment pour chaque restaurant 
+    \item \textbf{RG07 :} Via ses commandes, un client qui a un compte lié (au restaurant) cumule des points de fidélité indépendamment pour chaque restaurant. Ce compte est créé automatiquement lors de la première commande d'un utilisateur qui n'est pas un invité.
     \item \textbf{RG08 :} Des remises (pourcentage ou item offert) sont débloquées lorsque le client atteint certains seuils de points définis par le restaurant.
-    \item \textbf{RG09 :} Si le client à un compte lié au restaurant, il peut déposer un commentaire contenant une note, visible par les autres clients.
+    \item \textbf{RG09 :} Si le client a un compte lié au restaurant, il peut déposer un commentaire contenant une note, visible par les autres clients.
 \end{itemize}
 
 \paragraph{Commandes}
 \begin{itemize}
     \item \textbf{RG10 :} Une commande est passée par un client auprès d'un unique restaurant (pas de commande multi-restaurants).
-    \item \textbf{RG11 :} Un client ne peut avoir qu'une seule commande "en cours" (non achevée) par restaurant à un instant T.
+    \item \textbf{RG11 :} Un client ne peut avoir qu'une seule commande "en cours" (non achevée) par restaurant à un instant T. Il peut passer plusieurs commandes en cours à plusieurs restaurants différents.
     \item \textbf{RG12 :} Si un client ajoute un item alors qu'une commande est déjà ouverte pour ce restaurant, l'item est ajouté à la commande existante. Sinon, une nouvelle commande est créée.
     \item \textbf{RG13 :} Si un client ajoute un item déjà présent dans sa commande, la quantité de cet item est incrémentée (pas de doublon de ligne).
-    \item \textbf{RG14 :} Le prix total d'une commande est calculé et mis à jour automatiquement (via Trigger) à chaque ajout, modification ou suppression d'item ou de formule.
-    \item \textbf{RG15 :} La suppression d'une commande entraîne la suppression automatique de tout son contenu (items et formules) via la contrainte ON DELETE CASCADE.
+    \item \textbf{RG14 :} Le prix total d'une commande est calculé et mis à jour automatiquement à chaque ajout, modification ou suppression d'item ou de formule.
+    \item \textbf{RG15 :} La suppression d'une commande entraîne la suppression automatique de tout son contenu (items et formules).
 \end{itemize}
 
 \paragraph{Formules (ou Menu)}
 \begin{itemize}
     \item \textbf{RG16 :} Une formule est définie par un prix fixe et une structure de catégories (ex: 1 Entrée + 1 Plat).
     \item \textbf{RG17 :} Une formule peut avoir des conditions de validité (jours de la semaine, horaires, midi/soir).
-    \item \textbf{RG18 :} Lors de l'achat d'une formule, les items choisis par le client sont liés à une instance spécifique de cette formule dans la commande, afin de distinguer les items "au menu" des items "à la carte
+    \item \textbf{RG18 :} Lors de l'achat d'une formule, les items choisis par le client sont liés à une instance spécifique de cette formule dans la commande, afin de distinguer les items "au menu" des items "à la carte".
 \end{itemize}
 
 \paragraph{Géolocalisation}
 \begin{itemize}
     \item \textbf{RG19 :} La recherche par proximité affiche uniquement les restaurants situés dans un rayon défini (par défaut 2km) autour de la position de l'utilisateur.
-    \item \textbf{RG20 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre (formule de géographie PostGIS).
+    \item \textbf{RG20 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre.
 \end{itemize}
 
 \newpage
@@ -150,7 +151,7 @@ Nous avons identifié et implémenté les opérations suivantes, classées par d
     \item \textbf{Mise à jour et Gestion du Panier (Transactionnel) :}
     \begin{itemize}
         \item \textbf{Ajout d'items simples :} Utilisation d'une procédure stockée PL/pgSQL (\texttt{ajouter\_au\_panier}) qui gère automatiquement la création de la commande si elle n'existe pas encore (mécanisme de "panier actif") ou la mise à jour de la quantité si l'item est déjà présent.
-        \item \textbf{Tunnel de commande :} Pour les formules complexes, nous avons mis en place un processus étape par étape en PHP (via \texttt{\$\_SESSION}). L'enregistrement final utilise une transaction atomique pour insérer simultanément le choix de la formule et ses composants dans les tables \texttt{contenir\_formules} et \texttt{details\_commande\_formule}. Concrètement, le temps que l'opération ce termine, le résultat est stocké au fur et à mesure dans la mémoire vive du serveur. Il n'est stocké dans la base de donnée qu'à la fin, dans le but de ne pas polluer la base avec des données incomplète.
+        \item \textbf{Tunnel de commande :} Pour les formules complexes, nous avons mis en place un processus étape par étape en PHP (via \texttt{\$\_SESSION}). L'enregistrement final utilise une transaction atomique pour insérer simultanément le choix de la formule et ses composants dans les tables \texttt{contenir\_formules} et \texttt{details\_commande\_formule}. Concrètement, le temps que l'opération se termine, le résultat est stocké au fur et à mesure dans la mémoire vive du serveur. Il n'est stocké dans la base de données qu'à la fin, dans le but de ne pas polluer la base avec des données incomplètes.
         \item \textbf{Annulation :} Possibilité d'annuler une commande en cours, déclenchant une suppression en cascade (\texttt{ON DELETE CASCADE}) de tous les items associés.
     \end{itemize}
 
@@ -174,10 +175,10 @@ Lors de la phase de développement, nous avons identifié une limitation importa
 Comme le montre la Figure \ref{fig:mcd_v1}, notre modélisation initiale de l'entité \texttt{Formules} était incomplète. Elle était reliée au restaurant (\textit{offrir}) et à la commande (\textit{choisir}), mais elle manquait de définition structurelle.
 
 \paragraph{Problème identifié :}
-Il était impossible de définir de quoi était composée une formule type (par exemple : "Une Entrée au choix + Un Plat au choix"). Le système ne pouvait pas savoir quels types de plats le client devait choisir pour valider sa formule.
+Nous voulions passer la composition de la formule via son titre, en effectuant un traitement de texte, mais cette approche ne respectait pas la 1NF.
 
 \paragraph{Correction apportée :}
-Pour pallier ce manque, nous avons ajouté l'association \textbf{\texttt{composer\_formule}} (visible sur le schéma final) reliant l'entité \texttt{Formules} à l'entité \texttt{Categories\_items}.
+Pour réparer cette erreur de conception, nous avons ajouté l'association \textbf{\texttt{composer\_formule}} (visible sur le schéma final) reliant l'entité \texttt{Formules} à l'entité \texttt{Categories\_items}.
 
 Cette modification structurelle permet désormais de :
 \begin{itemize}
@@ -248,29 +249,29 @@ SGBD utilisé : \textbf{PostgreSQL} avec extension \textbf{PostGIS}.
 
 \subsection{Architecture Logicielle : Le choix du modèle MVC}
 
-Pour l'implémentation de l'interface utilisateur, nous avons opté pour l'architecture Modèle-Vue-Contrôleur (MVC). Ce motif de conception nous a permis de structurer notre application PHP native en séparant clairement les responsabilités, ce qui est crucial pour un projet mêlant des règles de gestion complexes (SQL/PLpgSQL) et une interface web interactive. \\
+Après avoir cherché des renseignements, nous avons décidé de suivre l'architecture Modèle-Vue-Contrôleur pour notre projet. Cette structuration nous a permis de délimiter les responsabilités des fichiers; ce qui est important car le projet traite des règles de gestion complexes mêlant SQL, PHP et HTML/CSS (interface web interactive). De plus, cela nous a aidé à apporter de la clarté à un projet qui s'annonçait de taille. \\
 
-Concrètement, l'application s'articule autour de trois composants distincts : 
+Concrètement, l'application tourne autour de trois composants distincts : 
 \begin{itemize} 
-    \item \textbf{Le Modèle (M) :} Il représente la couche d'accès aux données. Dans notre projet, les classes situées dans le dossier \texttt{models/} (ex: \texttt{Restaurant.php}, \texttt{Commandes.php}) encapsulent toute la logique SQL. Elles sont les seules autorisées à communiquer avec la base PostgreSQL via l'objet PDO. C'est ici que sont appelées nos procédures stockées complexes (comme \texttt{ajouter\_au\_panier}) et nos requêtes PostGIS, garantissant que le code SQL est centralisé et non dispersé dans les pages HTML. 
+    \item \textbf{Le Modèle (M) :} C'est la couche d'accès aux données stockées dans la base via des requêtes SQL. Des modèles d'objet représentant généralement des entités du projet sont stockés dans \texttt{model}, elle encapsule les requêtes SQL qui leur sont liées dans des fonctions paramétrées et réutilisables. On peut y traiter des requêtes complexes (comme des transactions atomiques) pour n'envoyer que l'information utile aux fichiers PHP.
     
-    \item \textbf{La Vue (V) :} Située dans le dossier \texttt{views/}, elle gère exclusivement la présentation. Elle reçoit les données brutes fournies par le contrôleur (sous forme de tableaux PHP) et les transforme en code HTML intelligible pour l'utilisateur (cartes de restaurants, tableaux de menus, formulaires). Elle ne contient aucune logique métier ni requête SQL, ce qui facilite la maintenance du design et l'intégration du CSS. 
+    \item \textbf{La Vue (V) :} Dans le dossier \texttt{views}, les vues gèrent quasi-exclusivement la présentation. Elles reçoivent des données brutes obtenues via le contrôleur (sous forme de tableaux PHP) et les transforment en code HTML couplé avec du CSS afin d'avoir un rendu propre et intelligible pour l'utilisateur (cartes de restaurants, tableaux de menus, formulaires). Elles contiennent le moins possible de logique métier (seulement des boucles de traitement pour l'affichage et quelques fonctions Javascript pour des affichages spéciaux) et aucune requête SQL, ce qui facilite la maintenance du design et l'intégration du CSS. 
     
-    \item \textbf{Le Contrôleur (C) :} C'est le chef d'orchestre de l'application (nos fichiers à la racine \texttt{src/}, comme \texttt{index.php} ou \texttt{commande.php}). Il intercepte les requêtes HTTP de l'utilisateur (GET/POST), vérifie les permissions (gestion de session, authentification), sollicite le Modèle pour récupérer ou modifier les données, puis sélectionne la Vue appropriée pour afficher le résultat. \\
+    \item \textbf{Le Contrôleur (C) :} C'est ici qu'on implémente principalement la logique métier, il fait la liaison entre les vues et les modèles. Il vérifie certaines conditions (par exemple la nature de l'utilisateur), ou des informations passées via l'URL, la session ou des méthodes POST. Puis il traite et regroupe les résultats des fonctions des modèles appelées afin qu'ils soient transformés en data utilisable par la vue.
 \end{itemize} 
 
 \textbf{Justification et Avantages :} Le choix de MVC offre plusieurs avantages majeurs pour ce projet : 
 \begin{enumerate} 
-    \item \textbf{Séparation des préoccupations :} En isolant la logique métier de l'interface graphique, nous respectons le principe de responsabilité unique. Cela permet de modifier la structure de la base de données (ex: optimisation d'une requête SQL) sans impacter le code de l'interface utilisateur. 
+    \item \textbf{Séparation des responsabilités :} Le modèle permet de séparer les responsabilités, ainsi si on veut changer la structure de la base de données, on peut potentiellement ne modifier que les requêtes et les fonctions dans les modèles sans toucher à la logique métier et à l'affichage.
     
-    \item \textbf{Sécurité et Robustesse :} Le contrôleur agit comme un filtre de sécurité qui valide les entrées utilisateur (comme les coordonnées GPS ou les ID de commande) avant qu'elles n'atteignent la couche de données, réduisant les risques d'injections ou d'erreurs logiques. 
+    \item \textbf{Sécurité et Robustesse :} Grâce aux vérifications du contrôleur, les entrées de l'utilisateur sont séparées de la couche de données avant d'être validées, ce qui réduit le risque d'injections ou d'erreur de logique.
     
-    \item \textbf{Travail collaboratif :} Cette structure a facilité le développement en équipe, permettant de travailler parallèlement sur le "Backend" (création des triggers et modèles PHP) et le "Frontend" (design des vues et expérience utilisateur) sans conflits de code majeurs.      
+    \item \textbf{Travail collaboratif :} La structure a pu permettre de mettre en place un parallélisme dans le développement, permettant aux membres du projet de travailler simultanément sur des parties distinctes du code, réduisant les risques de fusions conflictuelles.
 \end{enumerate}
 
 \subsection{Implémentation des opérations}
 
-Nous avons choisi de déporter une grande partie de la logique métier directement dans la base de données via des procédures stockées PL/pgSQL. Cela garantit la rapidité d'exécution et l'intégrité des données.
+Nous avons choisi de déporter une partie de la logique métier directement dans la base de données via des procédures stockées PL/pgSQL. Notamment dans les cas où une réactivité rapide de l'affichage était voulue. Cela garantit la rapidité d'exécution et l'intégrité des données.
 
 \subsubsection{Gestion transactionnelle du panier}
 
@@ -321,26 +322,8 @@ EXECUTE FUNCTION update_prix_commande_func();
 \end{lstlisting}
 
 % ============================================================
-% PARTIE 4 : UTILISATION ET INTERFACE
+% PARTIE 4 : INTERFACE
 % ============================================================
-\section{Utilisation}
-
-\subsection{Environnement d'exécution}
-\begin{itemize}
-    \item \textbf{Serveur :} Apache (Linux/Ubuntu)
-    \item \textbf{Base de données :} PostgreSQL 13+
-    \item \textbf{Langage :} PHP 7.4+ (sans framework lourd type Symfony)
-    \item \textbf{Extensions :} \texttt{php-pgsql} pour la connexion BDD.
-\end{itemize}
-
-\subsection{Notice d'utilisation pendant le développement}
-\begin{enumerate}
-    \item Importer la structure via \texttt{create.sql} sur sa base de données (nous avons utilisé les bases personnelles de l'ENSEIRB).
-    \item Peupler la base via \texttt{insert.sql}.
-    \item Accéder au site via l'url suivant https://zzz.tabeille001.bordeaux-inp.fr/src/index.php en s'assurant d'être connecté sur le réseaux de Bordeaux INP
-    \item Enfin, se connecter/créer un compte en utilisant un email ou utiliser le mode invité.
-\end{enumerate}
-
 \section{Description des Interfaces et Fonctionnalités Implémentées}
 
 L'application est divisée en trois interfaces distinctes, accessibles selon le rôle de l'utilisateur (Client, Invité, Restaurateur). 
@@ -370,7 +353,7 @@ La navigation dans le menu d'un restaurant propose deux modes de commande :
     \item \textbf{À la carte :} Ajout direct d'items au panier. Si l'item possède des variantes (sauces, accompagnements), un système de liste déroulante dynamique permet d'ajouter ces compléments.
     \item \textbf{Par Formule :} Pour les menus complexes (ex: Entrée + Plat + Dessert), nous avons développé un \textit{configurateur étape par étape}. L'utilisateur ne voit que les plats éligibles pour l'étape en cours. La validation finale déclenche une transaction SQL atomique qui lie tous les items choisis à une instance unique de formule.
 \end{enumerate}
-Au fur et à mesure que la commande est créer, un petit aperçu de celle-ci est visible sur la droite de l'écran. Cela permet à l'utilisateur de savoir ce qu'il a commandé.
+Au fur et à mesure que la commande est créée, un petit aperçu de celle-ci est visible sur la droite de l'écran. Cela permet à l'utilisateur de savoir ce qu'il a commandé.
 
 \subsubsection{Fidélité et Récompenses}
 Un système de gamification récompense les clients réguliers :
@@ -380,9 +363,9 @@ Un système de gamification récompense les clients réguliers :
 \end{itemize}
 
 \subsubsection{Suivi et Historique}
-Les commandes sont validés (On imagine qu'un paiement peut être mis en place à ce moment là) dans la section \textbf{panier}.
-Puis, le client peut valider la réception dans la section \textbf{suivie}, il atteste avoir bien reçu la commande.
-Enfin, les information des la commandes sont passé dans un \textbf{historique} que le client peut consulter à tout moment.
+Les commandes sont validées (On imagine qu'un paiement peut être mis en place à ce moment-là) dans la section \textbf{panier}.
+Puis, le client peut valider la réception dans la section \textbf{suivi}, il atteste avoir bien reçu la commande.
+Enfin, les informations de la commande sont passées dans un \textbf{historique} que le client peut consulter à tout moment.
 
 \subsection{Interface Invité (Guest)}
 Afin de réduire la friction à l'entrée, un mode "Invité" a été développé.
@@ -396,7 +379,7 @@ Afin de réduire la friction à l'entrée, un mode "Invité" a été développé
 Cette interface sécurisée est dédiée aux professionnels pour la gestion de leur établissement.
 
 \subsubsection{Gestion du Menu}
-Le restaurateur dispose d'outils lui permettant la création/insertion ainsi que certaines modification et suppression  :
+Le restaurateur dispose d'outils lui permettant la création/insertion ainsi que certaines modifications et suppressions :
 \begin{itemize}
     \item \textbf{Création de Plats :} Ajout de nouveaux items avec définition du prix, de la catégorie et association possible avec des compléments existants.
     \item \textbf{Création de Formules :} Interface permettant de définir un prix global, de composer la structure du menu (ex: choisir les catégories "Entrée" et "Plat") et de définir des conditions de validité (jours, horaires).
@@ -405,6 +388,30 @@ Le restaurateur dispose d'outils lui permettant la création/insertion ainsi que
 
 \subsubsection{Tableau de Bord Statistique}
 Une page de statistiques exploitant des requêtes d'agrégation complexes permet au restaurateur de visualiser son chiffre d'affaires mensuel et la répartition des ventes (carte vs formules).
+
+% ============================================================
+% PARTIE 5 : UTILISATION
+% ============================================================
+
+\section{Utilisation}
+
+\subsection{Environnement d'exécution}
+\begin{itemize}
+    \item \textbf{Serveur :} Nous utilisons le serveur de l'école.
+    \item \textbf{Base de données :} phpMyAdmin 
+    \item \textbf{Langage :} PHP 7.4+, PostgreSQL 13+
+    \item \textbf{Extensions :} \texttt{php-pgsql} pour la connexion BDD.
+\end{itemize}
+
+\subsection{Notice d'utilisation pendant le développement}
+\begin{enumerate}
+    \item Importer la structure via \texttt{create.sql} sur sa base de données (nous avons utilisé les bases personnelles de l'ENSEIRB).
+    \item Peupler la base via \texttt{insert.sql}.
+    \item Accéder au site via l'URL suivante https://zzz.tabeille001.bordeaux-inp.fr/src/index.php en s'assurant d'être connecté sur le réseau de Bordeaux INP
+    \item Enfin, se connecter/créer un compte en utilisant un email ou utiliser le mode invité.
+    \item Pour détruire la base, utiliser le fichier \texttt{drop.sql}.
+\end{enumerate}
+
 
 
 \end{document}
