@@ -99,6 +99,7 @@ CREATE TABLE clients
     client_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
+    telephone VARCHAR(30) NOT NULL,
     adresse VARCHAR(255) NOT NULL
 );
 
@@ -156,7 +157,8 @@ CREATE TABLE commandes
 (
     commande_id SERIAL PRIMARY KEY,
     date_commande TIMESTAMP NOT NULL,
-    heure_retrait TIMESTAMP,
+    heure_retrait TIMESTAMP NOT NULL DEFAULT ((NOW() AT TIME ZONE 'Europe/Paris') + INTERVAL '30 minutes'),
+    est_asap BOOLEAN DEFAULT FALSE,
     prix_total_remise DECIMAL(10, 2) DEFAULT 0,
     etat etat_commande DEFAULT 'en_commande' NOT NULL,
     client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
@@ -181,7 +183,7 @@ CREATE TABLE contenir_formules (
 
 CREATE TABLE details_commande_formule (
     contenir_formule_id INT REFERENCES contenir_formules(id) ON DELETE CASCADE,
-    item_id INT REFERENCES items(item_id),
+    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
     PRIMARY KEY (contenir_formule_id, item_id)
 );
 
@@ -231,7 +233,7 @@ BEGIN
 
     IF v_commande_id IS NULL THEN
         INSERT INTO commandes (client_id, restaurant_id, date_commande)
-        VALUES (p_client_id, p_restaurant_id, NOW())
+        VALUES (p_client_id, p_restaurant_id, (NOW() AT TIME ZONE 'Europe/Paris'))
         RETURNING commande_id INTO v_commande_id;
     END IF;
 
@@ -341,10 +343,17 @@ BEGIN
     FROM contenir_items 
     WHERE commande_id = p_commande_id AND item_id = p_item_id;
 
-    -- 2. Si l'item n'existe pas, on arrête
     IF NOT FOUND THEN
         RETURN FALSE;
     END IF;
+
+    DELETE FROM contenir_items ci
+    WHERE ci.commande_id = p_commande_id
+      AND ci.item_id IN (
+            SELECT ea.item_id2
+            FROM etre_accompagne_de ea
+            WHERE ea.item_id1 = p_item_id
+      );
 
     IF v_quantite > 1 THEN
         UPDATE contenir_items SET quantite = quantite - 1 
@@ -399,23 +408,49 @@ $$ LANGUAGE plpgsql;
 
 -- TRIGGERS
 
--- Trigger sur les items 
-DROP TRIGGER IF EXISTS trg_update_prix_items ON contenir_items;
+-- Trigger on items total update
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_trigger t
+        JOIN pg_class c ON c.oid = t.tgrelid
+        WHERE t.tgname = 'trg_update_prix_items' AND c.relname = 'contenir_items'
+    ) THEN
+        EXECUTE 'DROP TRIGGER trg_update_prix_items ON contenir_items';
+    END IF;
+END $$;
+
 CREATE TRIGGER trg_update_prix_items
 AFTER INSERT OR UPDATE OR DELETE ON contenir_items
 FOR EACH ROW
 EXECUTE FUNCTION update_prix_commande_func();
 
--- Trigger sur les formules
-DROP TRIGGER IF EXISTS trg_update_prix_formules ON contenir_formules;
+-- Trigger on formulas total update
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_trigger t
+        JOIN pg_class c ON c.oid = t.tgrelid
+        WHERE t.tgname = 'trg_update_prix_formules' AND c.relname = 'contenir_formules'
+    ) THEN
+        EXECUTE 'DROP TRIGGER trg_update_prix_formules ON contenir_formules';
+    END IF;
+END $$;
+
 CREATE TRIGGER trg_update_prix_formules
 AFTER INSERT OR UPDATE OR DELETE ON contenir_formules
 FOR EACH ROW
 EXECUTE FUNCTION update_prix_commande_func();
 
+-- Trigger on comments to refresh restaurant note
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_trigger t
+        JOIN pg_class c ON c.oid = t.tgrelid
+        WHERE t.tgname = 'trg_calcul_note' AND c.relname = 'commentaires'
+    ) THEN
+        EXECUTE 'DROP TRIGGER trg_calcul_note ON commentaires';
+    END IF;
+END $$;
 
--- Trigger sur les commentaires
-DROP TRIGGER IF EXISTS trg_calcul_note ON commentaires;
 CREATE TRIGGER trg_calcul_note
 AFTER INSERT OR UPDATE OR DELETE ON commentaires
 FOR EACH ROW

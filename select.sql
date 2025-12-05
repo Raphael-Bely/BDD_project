@@ -1,4 +1,14 @@
---REQUETE CONSULTATION
+-- ============================================================================
+-- CONFIGURATION: Valeurs par défaut pour les requètes paramétrées
+-- ============================================================================
+\set restaurant_id 1
+\set user_longitude -0.5596
+\set user_latitude 44.8378
+\set months_back 12
+
+-- ============================================================================
+-- REQUETE CONSULTATION
+-- ============================================================================
 
 --Liste des restaurants de chaque catégorie.
 
@@ -91,8 +101,8 @@ FROM All_item_sales AS S
 JOIN commandes AS C ON S.commande_id = C.commande_id
 JOIN items AS I ON S.item_id = I.item_id
 
-WHERE C.date_commande > (NOW() - INTERVAL '1 year')
-AND I.restaurant_id = ? 
+WHERE C.date_commande >= (NOW() - (:months_back || ' months')::interval)
+AND I.restaurant_id = :restaurant_id 
 
 GROUP BY I.item_id, I.nom, annee, mois
 ORDER BY annee DESC, mois DESC, nb_total_ventes DESC;
@@ -100,11 +110,11 @@ ORDER BY annee DESC, mois DESC, nb_total_ventes DESC;
 
 -- Un utilisateur qui renseigne sa position (GPS) peut consulter la liste des restaurtants disponibles, dans un rayon de 2km, rangés par ordre croissant de distance.
 
-SELECT R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint(?, ?), 4326)) as distance_en_m --longitude, latitude
+SELECT R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint(:user_longitude, :user_latitude), 4326)) as distance_en_m --longitude, latitude
 FROM restaurants as R
 WHERE ST_DWithin(
     R.coordonnees_gps,
-    ST_SetSRID(ST_MakePoint(?, ?), 4326), --longitude, latitude
+    ST_SetSRID(ST_MakePoint(:user_longitude, :user_latitude), 4326), --longitude, latitude
     2000
 )
 ORDER BY distance_en_m ASC;

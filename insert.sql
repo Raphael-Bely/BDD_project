@@ -12,7 +12,7 @@ INSERT INTO restaurants (nom, adresse, coordonnees_gps, restaurant_email, mot_de
 (
     'Pizzeria Popolare', 
     '111 Rue Réaumur, 33000 Bordeaux', 
-    ST_SetSRID(ST_MakePoint(2.3458, 48.8682), 4326),
+    ST_SetSRID(ST_MakePoint(-0.5920, 44.8064), 4326),
     'pizzeria.popolare@email.fr',
     'admin'
 ),
@@ -73,7 +73,7 @@ INSERT INTO items (nom, prix, est_disponible, restaurant_id, categorie_item_id) 
 ('Pizza Margherita', 12.00, TRUE, 2, 2),
 ('Tiramisu', 8.50, TRUE, 2, 4),
 ('Coca-Cola', 4.00, TRUE, 2, 5),
-('Supplément Sauce Piquante', 1.50, TRUE, 2, 6),
+('Supplément Sauce Piccante', 1.50, TRUE, 2, 6),
 
 -- Restaurant 3: Le Petit Cambodge (Cambodgien)
 ('Nems (Rouleaux impériaux)', 9.50, TRUE, 3, 1),
@@ -96,7 +96,16 @@ INSERT INTO items (nom, prix, est_disponible, restaurant_id, categorie_item_id) 
 ('Menu Dégustation 5 temps', 110.00, TRUE, 6, 2),
 ('Accord Vins Naturels', 70.00, TRUE, 6, 5),
 ('Plateau de Fromages Affinés', 22.00, TRUE, 6, 4),
-('Carpaccio de Saint-Jacques', 40.00, TRUE, 6, 1);
+('Carpaccio de Saint-Jacques', 40.00, TRUE, 6, 1),
+
+-- Compléments spécifiques par restaurant (un par resto)
+('Supplément Sauce Maison', 1.50, TRUE, 1, 6),
+('Supplément Sauce Piccante', 1.50, TRUE, 2, 6),
+('Supplément Nuoc Mam', 1.20, TRUE, 3, 6),
+('Confiture Maison', 0.80, TRUE, 4, 6),
+('Sauce Homard', 3.50, TRUE, 5, 6),
+('Plateau Fromages (Accord)', 25.00, TRUE, 5, 4),
+('Sauce Agrumes', 2.00, TRUE, 6, 6);
 
 
 INSERT INTO proprietes_items (nom) VALUES
@@ -125,9 +134,9 @@ INSERT INTO avoir_proprietes_items (item_id, propriete_items_id) VALUES
 (8, 3), -- Coca-Cola (Halal)
 (8, 5), -- Coca-Cola (Sans Gluten)
 (8, 6), -- Coca-Cola (Sans Lactose)
-(9, 1), -- Supplément Sauce Piquante (Végétarien)
-(9, 2), -- Supplément Sauce Piquante (Vegan)
-(9, 5), -- Supplément Sauce Piquante (Sans Gluten)
+(9, 1), -- Supplément Sauce Piccante (Végétarien)
+(9, 2), -- Supplément Sauce Piccante (Vegan)
+(9, 5), -- Supplément Sauce Piccante (Sans Gluten)
 
 -- Le Petit Cambodge (Restaurant 3)
 (12, 1), -- Riz gluant (Végétarien)
@@ -232,7 +241,7 @@ INSERT INTO composer (item_id, ingredient_id, quantite_g) VALUES
 (7, 22, 40),  -- Biscuit cuillère
 (7, 23, 5),   -- Cacao en poudre
 
--- Item 9: Supplément Sauce Piquante
+-- Item 9: Supplément Sauce Piccante
 (9, 24, 50),  -- Piment (oiseau)
 
 -- Item 10: Nems
@@ -300,13 +309,22 @@ INSERT INTO horaires_ouverture (jour_semaine, heure_ouverture, heure_fermeture) 
 (3, '07:00:00', '17:00:00'), -- ID 16
 (4, '07:00:00', '17:00:00'), -- ID 17
 (5, '07:00:00', '17:00:00'), -- ID 18
-(6, '07:00:00', '17:00:00'); -- ID 19
+(6, '07:00:00', '17:00:00'), -- ID 19
+
+(1, '00:00:00', '23:59:59'), -- ID 20 (Lundi 24/24)
+(2, '00:00:00', '23:59:59'), -- ID 21 (Mardi 24/24)
+(3, '00:00:00', '23:59:59'), -- ID 22 (Mercredi 24/24)
+(4, '00:00:00', '23:59:59'), -- ID 23 (Jeudi 24/24)
+(5, '00:00:00', '23:59:59'), -- ID 24 (Vendredi 24/24)
+(6, '00:00:00', '23:59:59'), -- ID 25 (Samedi 24/24)
+(7, '00:00:00', '23:59:59'); -- ID 26 (Dimanche 24/24)
 
 INSERT INTO avoir_horaires_ouverture (restaurant_id, horaire_ouverture_id) VALUES
 -- Restaurant 1: Le Procope (Ouvert 7/7, Midi et Soir)
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14),
 
 -- Restaurant 2: Pizzeria Popolare (Ouvert 7/7, 24h/24)
+(2, 20), (2, 21), (2, 22), (2, 23), (2, 24), (2, 25), (2, 26),
 
 -- Restaurant 3: Le Petit Cambodge (Midi/Soir en semaine, fermé Samedi midi et Dimanche)
 (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9), (3, 10), (3, 12),
@@ -356,18 +374,18 @@ INSERT INTO avoir_categories_restaurants (restaurant_id, categorie_restaurant_id
 (6, 8);
 
 
-INSERT INTO clients (nom, email, adresse) VALUES
-('admin', 'admin@email.fr', 'Système'),
-('Alice Dupont', 'alice.dupont@email.fr', '12 Rue de la Paix, 75002 Paris'),
-('Benoit Martin', 'benoit.martin@email.com', '45 Avenue du Prado, 13008 Marseille'),
-('Claire Petit', 'claire.petit@email.net', '8 Rue Sainte-Catherine, 33000 Bordeaux'),
-('David Durand', 'david.durand@email.fr', '22 Place Bellecour, 69002 Lyon'),
-('Elsa Lefebvre', 'elsa.lefebvre@email.org', '1 Boulevard de la Liberté, 59000 Lille'),
-('Fabien Moreau', 'fabien.moreau@email.com', '7 Rue du Faubourg Saint-Honoré, 75008 Paris'),
-('Garance Girard', 'garance.girard@email.fr', '19 Rue Alsace Lorraine, 31000 Toulouse'),
-('Hugo Lambert', 'hugo.lambert@email.net', '5 Place Stanislas, 54000 Nancy'),
-('Ines Roussel', 'ines.roussel@email.com', '30 Rue Nationale, 37000 Tours'),
-('Julien Mercier', 'julien.mercier@email.fr', '10 Quai des Belges, 13001 Marseille');
+INSERT INTO clients (nom, email, telephone, adresse) VALUES
+('admin', 'admin@email.fr', '0100000000', 'Système'),
+('Alice Dupont', 'alice.dupont@email.fr', '0612345678', '12 Rue de la Paix, 75002 Paris'),
+('Benoit Martin', 'benoit.martin@email.com', '0623456789', '45 Avenue du Prado, 13008 Marseille'),
+('Claire Petit', 'claire.petit@email.net', '0634567890', '8 Rue Sainte-Catherine, 33000 Bordeaux'),
+('David Durand', 'david.durand@email.fr', '0645678901', '22 Place Bellecour, 69002 Lyon'),
+('Elsa Lefebvre', 'elsa.lefebvre@email.org', '0656789012', '1 Boulevard de la Liberté, 59000 Lille'),
+('Fabien Moreau', 'fabien.moreau@email.com', '0667890123', '7 Rue du Faubourg Saint-Honoré, 75008 Paris'),
+('Garance Girard', 'garance.girard@email.fr', '0678901234', '19 Rue Alsace Lorraine, 31000 Toulouse'),
+('Hugo Lambert', 'hugo.lambert@email.net', '0689012345', '5 Place Stanislas, 54000 Nancy'),
+('Ines Roussel', 'ines.roussel@email.com', '0690123456', '30 Rue Nationale, 37000 Tours'),
+('Julien Mercier', 'julien.mercier@email.fr', '0701234567', '10 Quai des Belges, 13001 Marseille');
 
 INSERT INTO fidelite (client_id, restaurant_id, points) VALUES
 -- Client 1 (Alice) est fidèle à la Pizzeria et à L'Ambroisie
@@ -633,10 +651,11 @@ VALUES (12, NOW() - INTERVAL '1 day', 22.00, 'acheve', 9, 6);
 INSERT INTO contenir_items (commande_id, item_id, quantite) VALUES (12, 23, 1);
 
 
--- AJUSTEMENT DES SÉQUENCES (Corrige aussi l'erreur sur le nom de la séquence)
--- Comme la colonne s'appelle 'id', la séquence par défaut est 'contenir_formules_id_seq'
-SELECT setval('commandes_commande_id_seq', (SELECT MAX(commande_id) FROM commandes));
-SELECT setval('contenir_formules_id_seq', (SELECT MAX(id) FROM contenir_formules));
+-- AJUSTEMENT DES SÉQUENCES (silencieux)
+DO $$ BEGIN
+    PERFORM setval('commandes_commande_id_seq', (SELECT MAX(commande_id) FROM commandes));
+    PERFORM setval('contenir_formules_id_seq', (SELECT MAX(id) FROM contenir_formules));
+END $$;
 
 
 
@@ -679,20 +698,26 @@ INSERT INTO item_offert (remise_id, item_id, quantite) VALUES
 -- COMPLEMENTS (Toppings, Sauces, Sides)
 -- Item 2 (Coq au vin) can have sauce complements
 INSERT INTO etre_accompagne_de (item_id1, item_id2) VALUES
-(2, 9),  -- Coq au vin → Supplément Sauce Piquante
-(6, 9),  -- Pizza Margherita → Supplément Sauce Piquante
+(2, 25),  -- Coq au vin (R1) → Supplément Sauce Maison (R1)
+(6, 26),  -- Pizza Margherita (R2) → Supplément Sauce Piccante (R2)
 
--- Item 10 (Nems) can have dipping sauce
-(10, 12), -- Nems → Riz gluant (as a side/dip)
+-- Item 10 (Nems) can have dipping sauce (same resto)
+(10, 27), -- Nems (R3) → Supplément Nuoc Mam (R3)
 
--- Item 11 (Bo Bun Spécial) can have sauce complement
-(11, 12), -- Bo Bun Spécial → Riz gluant
+-- Item 11 (Bo Bun Spécial) can have sauce complement (same resto)
+(11, 27), -- Bo Bun Spécial (R3) → Supplément Nuoc Mam (R3)
 
--- Item 18 (Langoustines) can have sauce complement
-(18, 9),  -- Langoustines → Supplément Sauce Piquante
+-- Item 14 (Croissant) can have confiture (same resto)
+(14, 28), -- Croissant (R4) → Confiture Maison (R4)
 
--- Item 19 (Poularde de Bresse) can have sauce
-(19, 9),  -- Poularde de Bresse → Supplément Sauce Piquante
+-- Item 18 (Langoustines) can have sauce complement (same resto)
+(18, 29),  -- Langoustines (R5) → Sauce Homard (R5)
 
--- Item 21 (Plateau de Fromages) as a dessert complement option
-(20, 23); -- Langoustines → Plateau de Fromages (wine pairing option)
+-- Item 19 (Poularde de Bresse) can have sauce (same resto)
+(19, 29),  -- Poularde de Bresse (R5) → Sauce Homard (R5)
+
+-- Item 20 (Tarte fine sablée) with cheese pairing (same resto)
+(20, 30), -- Tarte (R5) → Plateau Fromages (Accord) (R5)
+
+-- Item 24 (Carpaccio de Saint-Jacques) with citrus sauce (same resto)
+(24, 31); -- Carpaccio (R6) → Sauce Agrumes (R6)
