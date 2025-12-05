@@ -11,8 +11,9 @@ $error_message = null;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $adresse = isset($_POST['adresse']) ? trim($_POST['adresse']) : '';
+    $telephone = isset($_POST['telephone']) ? trim($_POST['telephone']) : '';
 
-    if (!empty($adresse)) {
+    if (!empty($adresse) && !empty($telephone)) {
         $database = new Database();
         $db = $database->getConnection();
 
@@ -20,10 +21,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $nom_invite = "Invité " . date('YmdHis'); // Nom unique basé sur timestamp
         $email_invite = "invite_" . uniqid() . "@temp.local"; // Email unique temporaire
 
-        $query = "INSERT INTO clients (nom, email, adresse) VALUES (:nom, :email, :adresse) RETURNING client_id";
+        $query = "INSERT INTO clients (nom, email, telephone, adresse) VALUES (:nom, :email, :telephone, :adresse) RETURNING client_id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':nom', $nom_invite);
         $stmt->bindParam(':email', $email_invite);
+        $stmt->bindParam(':telephone', $telephone);
         $stmt->bindParam(':adresse', $adresse);
 
         if ($stmt->execute()) {
@@ -41,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error_message = "Erreur lors de la création du compte invité.";
         }
     } else {
-        $error_message = "Veuillez saisir votre adresse de livraison.";
+        $error_message = "Veuillez saisir votre adresse de livraison et votre téléphone.";
     }
 }
 

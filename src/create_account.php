@@ -15,9 +15,10 @@ $error_message_email = NULL;
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nom = isset($_POST['nom']) ? trim($_POST['nom']) : '';
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $telephone = isset($_POST['telephone']) ? trim($_POST['telephone']) : '';
     $adresse = isset($_POST['adresse']) ? trim($_POST['adresse']) : '';
 
-    if (!empty($nom) && !empty($email) && !empty($adresse)) {
+    if (!empty($nom) && !empty($email) && !empty($telephone) && !empty($adresse)) {
         $database = new Database();
         $db = $database->getConnection();
         $client = new Client($db);
@@ -29,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $ancien_client_id = $_SESSION['client_id'];
             }
 
-            $client->createClient($nom, $email, $adresse);
+            $client->createClient($nom, $email, $telephone, $adresse);
             $result = $client->getIdByLogin($nom, $email);
 
             if ($result) {
