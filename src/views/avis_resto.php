@@ -1,3 +1,8 @@
+<?php
+// Utilise le contrôleur avis_restaurant.php
+// Informations transmises : id du restaurant (pour savoir quels avis récupérer)
+// Informations importés : nom du restaurant, tableau de commentaires, id du restaurant (pour le lien de retour)
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -30,7 +35,6 @@
             <p>Soyez le premier à donner votre avis !</p>
         </div>
     <?php else: ?>
-        
         <?php foreach ($avis_list as $avis): ?>
             <div class="avis-card">
                 <div class="avis-header">

@@ -6,11 +6,14 @@ class Client
 {
     private $conn;
 
+
+    // Database connection initialization.
     public function __construct($db)
     {
         $this->conn = $db;
     }
 
+    // Get client ID from credentials.
     public function getIdByLogin($nom, $email)
     {
         $query = Query::loadQuery('sql_requests/getClientId.sql');
@@ -24,6 +27,8 @@ class Client
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+
+    // Create new client account.
     public function createClient($nom, $email, $telephone, $adresse)
     {
         $query = Query::loadQuery('sql_requests/createClient.sql');
@@ -38,6 +43,7 @@ class Client
         return;
     }
 
+    // Check if email already exists.
     public function newClientEmailAlreadyExist($email)
     {
         $query = Query::loadQuery('sql_requests/newClientEmailAlreadyExist.sql');
@@ -48,13 +54,12 @@ class Client
 
         $stmt->execute();
 
-
         return $stmt->fetch() !== false;
     }
 
+    // Delete temporary guest account.
     public function deleteGuestAccount($client_id)
     {
-        // Sécurité supplémentaire : on vérifie que l'email ressemble bien à un invité
         $query = Query::loadQuery('sql_requests/deleteGuestAccount.sql');
 
         $stmt = $this->conn->prepare($query);

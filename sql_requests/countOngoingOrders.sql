@@ -1,4 +1,4 @@
--- Count ongoing orders for a client (status 'en_livraison')
+-- Retrieves orders with the status “in delivery” for the tracking page
 
 SELECT COUNT(*) AS nb 
 FROM commandes 

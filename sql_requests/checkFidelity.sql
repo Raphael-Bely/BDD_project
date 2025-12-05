@@ -1,6 +1,7 @@
--- Check if a fidelity account exists for a client at a specific restaurant
+-- Check whether a loyalty account already exists for a customer in a restaurant.
 
-SELECT fidelite_id, points 
+SELECT fidelite_id, 
+       points 
 FROM fidelite
 WHERE client_id = :client_id 
   AND restaurant_id = :restaurant_id

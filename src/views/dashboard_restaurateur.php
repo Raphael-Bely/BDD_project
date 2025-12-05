@@ -1,3 +1,22 @@
+<?php
+// Contrôleur utilisé : restaurateur_space.php
+// Informations transmises (via POST) :
+// - Action : add_item (nom, prix, categorie_id, disponible, complements[]), 
+//            add_formule (nom, prix, categories[], cond_jour[], cond_debut[], cond_fin[]), 
+//            add_horaire (jour, debut, fin)
+
+// Informations transmises (via GET) :
+// - Action : del_horaire (id)
+// - Page : stats, add_item, formules, horaires (pour la navigation)
+
+// Informations importées :
+// - message_succes, message_erreur
+// - stats (tableau des ventes)
+// - categories_items (liste des catégories pour les formulaires)
+// - liste_horaires (tableau des créneaux d'ouverture)
+// - jours_semaine (mapping ID jour -> Nom jour)
+// - conditions_dispo (liste des conditions existantes pour les formules)
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -11,7 +30,6 @@
             --sidebar-bg: #2c3e50;
             --sidebar-text: #ecf0f1;
             --accent-color: #3498db;
-            /* Bleu Pro */
             --bg-body: #f4f6f9;
             --card-white: #ffffff;
         }
@@ -24,7 +42,6 @@
             background-color: var(--bg-body);
         }
 
-        /* --- SIDEBAR (Gauche) --- */
         .sidebar {
             width: 250px;
             background-color: var(--sidebar-bg);
@@ -71,10 +88,8 @@
             color: white;
         }
 
-        /* --- MAIN CONTENT (Droite) --- */
         .main-content {
             margin-left: 290px;
-            /* Largeur sidebar + padding */
             padding: 40px;
             width: 100%;
         }
@@ -84,7 +99,6 @@
             margin-bottom: 30px;
         }
 
-        /* --- UI ELEMENTS --- */
         .card {
             background: var(--card-white);
             padding: 25px;
@@ -93,7 +107,6 @@
             margin-bottom: 20px;
         }
 
-        /* Messages */
         .alert {
             padding: 15px;
             border-radius: 5px;
@@ -184,7 +197,6 @@
             background-color: #2980b9;
         }
 
-        /* Tableaux */
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -234,10 +246,10 @@
         <a href="espace_restaurateur.php?page=add_item" class="nav-link <?= $page == 'add_item' ? 'active' : '' ?>">
             🍽️ Gérer les plats
         </a>
-        <a href="espace_restaurateur.php?page=formules" class="nav-link <?= $page == 'formules' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=formules" class="nav-link <?= $page == 'formules' ? 'active' : '' ?>">
             🍱 Gérer les formules
         </a>
-        <a href="espace_restaurateur.php?page=horaires" class="nav-link <?= $page == 'horaires' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=horaires" class="nav-link <?= $page == 'horaires' ? 'active' : '' ?>">
             🕒 Horaires d'ouverture
         </a>
 
@@ -568,6 +580,7 @@
                             const table = document.getElementById('table-conditions');
                             const row = table.insertRow();
 
+                            // jour
                             const cell1 = row.insertCell(0);
                             let selectHtml = '<select name="cond_jour[]" style="padding:5px;">';
                             for (const [k, v] of Object.entries(jours)) {
@@ -576,12 +589,15 @@
                             selectHtml += '</select>';
                             cell1.innerHTML = selectHtml;
 
+                            // debut
                             const cell2 = row.insertCell(1);
                             cell2.innerHTML = '<input type="time" name="cond_debut[]" required style="padding:5px;">';
 
+                            // fin
                             const cell3 = row.insertCell(2);
                             cell3.innerHTML = '<input type="time" name="cond_fin[]" required style="padding:5px;">';
 
+                            // suppression
                             const cell4 = row.insertCell(3);
                             cell4.innerHTML = '<button type="button" onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer;">&times;</button>';
                         }
@@ -667,7 +683,7 @@
 
                 <div class="card" style="flex:1; min-width:300px; height:fit-content;">
                     <h3>Ajouter un créneau</h3>
-                    <form method="POST" action="espace_restaurateur.php?page=horaires">
+                    <form method="POST" action="restaurateur_space.php?page=horaires">
                         <input type="hidden" name="action" value="add_horaire">
 
                         <div class="form-group">
@@ -730,7 +746,6 @@
             if (container.children.length > 1) {
                 btn.parentElement.remove();
             } else {
-                // On vide simplement les champs de la dernière ligne
                 const inputs = btn.parentElement.querySelectorAll('input');
                 inputs.forEach(i => i.value = '');
             }
@@ -748,10 +763,8 @@
         const hiddenDiv = document.getElementById('hidden-inputs');
 
         if (searchInput) {
-            // Liste des IDs déjà sélectionnés pour éviter les doublons
             let selectedIds = new Set();
 
-            // 1. Écoute de la frappe
             searchInput.addEventListener('input', function () {
                 const term = this.value;
                 if (term.length < 2) {
@@ -766,7 +779,6 @@
                         if (data.length > 0) {
                             resultsDiv.style.display = 'block';
                             data.forEach(item => {
-                                // On n'affiche pas ceux déjà sélectionnés
                                 if (!selectedIds.has(item.item_id)) {
                                     const div = document.createElement('div');
                                     div.style.padding = '8px';
@@ -776,7 +788,6 @@
                                     div.onmouseout = () => div.style.background = 'white';
                                     div.textContent = `${item.nom} (${item.prix}€)`;
 
-                                    // Clic sur un résultat
                                     div.onclick = () => addItem(item);
                                     resultsDiv.appendChild(div);
                                 }
@@ -787,11 +798,9 @@
                     });
             });
 
-            // 2. Fonction pour ajouter un item à la liste
             function addItem(item) {
                 selectedIds.add(item.item_id);
 
-                // Affichage visuel (Badge)
                 const badge = document.createElement('span');
                 badge.style.background = '#e3f2fd';
                 badge.style.color = '#1976d2';
@@ -801,7 +810,6 @@
                 badge.innerHTML = `${item.nom} <span style="cursor:pointer; font-weight:bold; margin-left:5px;" onclick="removeItem(this, ${item.item_id})">&times;</span>`;
                 selectedDiv.appendChild(badge);
 
-                // Ajout du champ caché pour le formulaire POST
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'complements[]';
@@ -809,19 +817,16 @@
                 input.id = `input-comp-${item.item_id}`;
                 hiddenDiv.appendChild(input);
 
-                // Reset recherche
                 searchInput.value = '';
                 resultsDiv.style.display = 'none';
             }
 
-            // 3. Fonction pour supprimer
             window.removeItem = function (span, id) {
                 selectedIds.delete(id);
-                span.parentElement.remove(); // Supprime le badge
-                document.getElementById(`input-comp-${id}`).remove(); // Supprime l'input caché
+                span.parentElement.remove();
+                document.getElementById(`input-comp-${id}`).remove();
             };
 
-            // Fermer la liste si on clique ailleurs
             document.addEventListener('click', function (e) {
                 if (e.target !== searchInput) {
                     resultsDiv.style.display = 'none';

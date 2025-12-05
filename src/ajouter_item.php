@@ -30,12 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['item_id']) && isset($
 
     } catch (PDOException $e) {
             if ($e->getCode() == '23503') {
-            // Le client ID en session n'existe plus en BDD (suite à un reset)
-            
-            // 1. On détruit la session pourrie
             session_unset();
             session_destroy();
-            session_start();  //recrée une session propre
+            session_start();
             
             $error_msg = "Votre session a expiré ou le compte n'existe plus. Veuillez vous reconnecter.";
             

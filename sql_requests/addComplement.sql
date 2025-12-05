@@ -1,4 +1,4 @@
--- Add a complement to an item (item_id1 can have item_id2 as complement)
+-- Link 2 items so that the second accompanies the first
 
 INSERT INTO etre_accompagne_de (item_id1, item_id2)
 VALUES (?, ?)

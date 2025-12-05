@@ -1,3 +1,24 @@
+<?php
+// Contrôleur utilisé : commande.php
+// Informations transmises (Vue -> Contrôleur via GET/POST) :
+// - use_remise (GET) : ID de la remise que le client souhaite appliquer.
+// - commande_id, restaurant_id, client_id, total, cout_points (POST vers confirmer_commande.php) : Données pour valider le paiement.
+// - commande_id (POST vers annuler_commande.php) : Données pour annuler le panier.
+
+// Informations importées (Contrôleur -> Vue) :
+// - historiqueCommandes (Tableau principal) contenant pour chaque commande :
+//      - commande_id, date_commande, heure_retrait, nom_restaurant
+//      - prix_total_remise (Prix initial)
+//      - prix_final_a_payer (Prix après réduction)
+//      - montant_reduction (Montant en € de la remise)
+//      - cout_points_remise (Points à déduire du solde)
+//      - solde_points_actuel (Solde fidélité du client)
+//      - points_gagnes_commande (Points que la commande va rapporter)
+//      - remises_possibles (Tableau des récompenses débloquées)
+//      - liste_articles (Tableau des items à la carte)
+//      - liste_formules (Tableau structuré des formules avec leur composition)
+// - is_guest (Booléen) : Indique si l'utilisateur est en mode invité (impacte l'affichage fidélité).
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -7,7 +28,6 @@
     <title>Mon Panier</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Variables & Base --- */
         :root {
             --bg-body: #f8f9fa;
             --text-main: #2c3e50;
@@ -36,7 +56,6 @@
             padding: 40px 20px;
         }
 
-        /* --- Header --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -94,7 +113,6 @@
             border: 1px solid #ffeeba;
         }
 
-        /* --- Carte --- */
         .section-title {
             font-size: 1.8rem;
             font-weight: 800;
@@ -146,7 +164,6 @@
             border-radius: 20px;
         }
 
-        /* --- Fidélité --- */
         .loyalty-section {
             background-color: #f0fdf4;
             border: 1px solid #bbf7d0;
@@ -183,7 +200,6 @@
             font-size: 1rem;
         }
 
-        /* --- Promo Invité --- */
         .loyalty-section.loyalty-guest {
             background-color: #fff7ed;
             border-color: #fed7aa;
@@ -208,7 +224,6 @@
             font-weight: 700;
         }
 
-        /* --- Récompenses --- */
         .rewards-list {
             border-top: 1px solid #bbf7d0;
             padding-top: 15px;
@@ -259,7 +274,6 @@
             background-color: #15803d;
         }
 
-        /* --- Total & Actions --- */
         h3 {
             font-size: 1.1rem;
             color: var(--text-main);
@@ -553,33 +567,31 @@
                 $dateCmd = new DateTime($commande['date_commande']);
                 $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
-                // --- VARIABLES DE CALCUL ---
                 $is_guest = isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true;
 
-                // 1. Prix
+                // 1. prix
                 $prix_initial = $commande['prix_total_remise'] ?? 0;
                 $prix_final = isset($commande['prix_final_a_payer']) ? $commande['prix_final_a_payer'] : $prix_initial;
                 $montant_reduction = isset($commande['montant_reduction']) ? $commande['montant_reduction'] : 0;
 
-                // 2. Coût en points (si remise utilisée)
+                // 2. cout en points (si remise utilisée)
                 $cout_points = isset($commande['cout_points_remise']) ? intval($commande['cout_points_remise']) : 0;
 
-                // 3. Solde Actuel
+                // 3. solde actuel
                 $solde_actuel = isset($commande['solde_points_actuel']) ? intval($commande['solde_points_actuel']) : 0;
 
-                // 4. Points Gagnés (sur le prix payé)
-                // Si invité, on gagne 0
+                // 4. points gagnés (sur le prix payé)
+                // si invité, on gagne 0
                 $points_gagnes = $is_guest ? 0 : intval(floor($prix_final));
-                $points_potentiels = intval(floor($prix_final)); // Pour l'affichage invité
+                $points_potentiels = intval(floor($prix_final)); // pour l'affichage invité
         
-                // 5. Calcul du solde final PROJETÉ
-                // Solde Final = Solde Actuel - Coût Récompense + Points Gagnés
+                // 5. calcul du solde final projeté
+                // solde final = solde actuel - cout recompense + points gagnés
                 $solde_final_projete = $solde_actuel - $cout_points + $points_gagnes;
                 // ---------------------------
         
                 echo "<div class='commande-card'>";
 
-                // HEADER
                 echo "<div class='commande-header'>";
                 echo "<div>";
                 if (isset($commande['nom_restaurant'])) {
@@ -601,10 +613,9 @@
                 echo "</div>";
                 echo "</div>";
 
-                // BODY
                 echo "<div class='commande-body'>";
 
-                // 1. FORMULES
+                // formules
                 if (!empty($commande['liste_formules'])) {
                     echo "<h3 class='titre-formule'>🍱 Formules</h3>";
                     echo "<table class='modern-table'><thead><tr><th>Menu</th><th>Composition</th><th class='col-right'>Prix</th></tr></thead><tbody>";
@@ -622,7 +633,7 @@
                     echo "</tbody></table>";
                 }
 
-                // 2. ARTICLES
+                // articles
                 if (!empty($commande['liste_articles'])) {
                     echo "<h3 class='titre-article'>📦 Articles à la carte</h3>";
                     echo "<table class='modern-table'><thead><tr><th>Article</th><th class='col-right'>P.U.</th><th class='col-center'>Qté</th><th class='col-right'>Total</th></tr></thead><tbody>";
@@ -638,17 +649,15 @@
                     echo "</tbody></table>";
                 }
 
-                // 3. FIDÉLITÉ & REMISES
+                // fidélité et remises
                 if (!$is_guest) {
                     echo "<div class='loyalty-section'>";
 
-                    // En-tête du bloc fidélité
                     echo "<div class='loyalty-header'>";
                     echo "<div class='loyalty-info'>";
                     echo "<h4>🎁 Programme Fidélité</h4>";
                     echo "<p>Solde actuel : <strong>{$solde_actuel} pts</strong></p>";
 
-                    // Affichage du coût en points si utilisé
                     if ($cout_points > 0) {
                         echo "<p style='color:#e74c3c; font-size:0.9rem;'>Coût récompense : -{$cout_points} pts</p>";
                     }
@@ -658,7 +667,7 @@
                     echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
                     echo "</div>";
 
-                    // A. LISTE DES RÉCOMPENSES DISPONIBLES (SI AUCUNE DÉJÀ APPLIQUÉE)
+                    // liste des récompenses dispo (si aucune sélectionnée)
                     if ($montant_reduction == 0 && !empty($commande['remises_possibles'])) {
                         echo "<div class='rewards-list'>";
                         echo "<span class='rewards-title'>✨ Récompenses disponibles :</span>";
@@ -673,7 +682,7 @@
                         echo "</div>";
                     }
 
-                    // B. REMISE APPLIQUÉE
+                    // remise appliquée
                     if ($montant_reduction > 0) {
                         echo "<div style='margin-top:15px; padding:10px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; color:#856404;'>";
                         echo "<strong>✅ Récompense active :</strong> -" . number_format($montant_reduction, 2) . " €";
@@ -683,7 +692,6 @@
 
                     echo "</div>";
                 } else {
-                    // MODE INVITÉ
                     echo "<div class='loyalty-section loyalty-guest'>";
                     echo "<div class='loyalty-header'>";
                     echo "<div class='loyalty-info'>";
@@ -696,7 +704,7 @@
                     echo "</div>";
                 }
 
-                // 4. TOTAL RECALCULÉ
+                // total recalculé
                 echo "<div class='total-section'>";
                 echo "<div class='total-row'>";
                 if ($montant_reduction > 0) {
@@ -705,20 +713,20 @@
                 } else {
                     echo "<span class='total-label'>Total à payer :</span>";
                 }
-                // On affiche toujours le prix final
+                // prix final
                 echo "<span class='total-price'>" . number_format($prix_final, 2, ',', ' ') . " €</span>";
                 echo "</div>";
                 echo "</div>";
 
-                // 5. ACTIONS
+                // actions
                 echo "<div class='actions-group'>";
 
-                // ANNULER
+                // annulation
                 echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir vider votre panier ?');\">";
                 echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
                 echo "<button type='submit' class='btn-annuler'>🗑️ Annuler</button>";
                 echo "</form>";
-
+                // confirmation
                 echo "<form action='confirmer_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir valider et payer cette commande ?');\">";
                 echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
                 $resto_id = isset($commande['restaurant_id']) ? $commande['restaurant_id'] : 0;
@@ -733,10 +741,8 @@
                 $defaultRetrait = (clone $nowPicker)->modify('+30 minutes');
                 $maxRetrait = (clone $nowPicker)->modify('+5 hours');
 
-                // If restaurant closing time is available, use it as the max instead of +5 hours
                 if (!empty($commande['restaurant_closing_time'])) {
                     $closingTime = new DateTime($nowPicker->format('Y-m-d') . ' ' . $commande['restaurant_closing_time']);
-                    // If closing time is today and before now, it's for tomorrow
                     if ($closingTime < $nowPicker) {
                         $closingTime->modify('+1 day');
                     }
@@ -761,10 +767,10 @@
                 echo "<button type='submit' class='btn-confirmer'>✅ Valider et Payer</button>";
                 echo "</form>";
 
-                echo "</div>"; // Fin actions
-        
-                echo "</div>"; // Fin body
-                echo "</div>"; // Fin card
+                echo "</div>";
+
+                echo "</div>";
+                echo "</div>";
             }
 
         } else {

@@ -1,3 +1,13 @@
+<?php
+// Contrôleur utilisé : historique.php
+// Informations transmises (Vue -> Contrôleur via GET/POST) :
+// - Aucune donnée directe (la vue ne fait qu'afficher des données existantes).
+// - client_id (via Session) : Utilisé implicitement pour récupérer l'historique spécifique de l'utilisateur connecté.
+
+// Informations importées (Contrôleur -> Vue) :
+// - stmt : Objet PDOStatement contenant la liste des commandes passées (id commande, date, état, prix total, nom du restaurant, adresse).
+// - client_id, client_nom, is_guest (via Session) : Utilisés pour la gestion de l'en-tête (barre de navigation).
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,7 +16,6 @@
     <title>Mon Historique</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Variables & Base --- */
         :root {
             --bg-body: #f8f9fa;
             --text-main: #2c3e50;
@@ -35,7 +44,6 @@
             padding: 40px 20px;
         }
 
-        /* --- 2. HEADER UNIFIÉ --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -86,7 +94,6 @@
             border: 1px solid #ffeeba;
         }
 
-        /* --- 3. Titre --- */
         .section-title {
             font-size: 1.8rem;
             font-weight: 800;
@@ -96,14 +103,12 @@
             padding-left: 15px;
         }
 
-        /* --- 4. Liste des Commandes (Cards) --- */
         .history-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* Lien global qui enveloppe la carte */
         .card-link {
             text-decoration: none;
             color: inherit;
@@ -126,7 +131,6 @@
             border-color: rgba(0,0,0,0.05);
         }
 
-        /* En-tête de la carte (Haut) */
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -150,7 +154,6 @@
             display: block;
         }
 
-        /* Badges d'état */
         .status-badge {
             padding: 6px 12px;
             border-radius: 50px;
@@ -160,11 +163,10 @@
             letter-spacing: 0.5px;
         }
 
-        .status-finished { background-color: #d1fae5; color: #065f46; } /* Vert */
-        .status-delivery { background-color: #dbeafe; color: #1e40af; } /* Bleu */
-        .status-pending  { background-color: #ffedd5; color: #9a3412; } /* Orange */
+        .status-finished { background-color: #d1fae5; color: #065f46; } 
+        .status-delivery { background-color: #dbeafe; color: #1e40af; } 
+        .status-pending  { background-color: #ffedd5; color: #9a3412; } 
 
-        /* Corps de la carte */
         .card-body {
             display: flex;
             justify-content: space-between;
@@ -188,7 +190,6 @@
             white-space: nowrap;
         }
 
-        /* --- 5. Empty State --- */
         .no-commandes {
             text-align: center;
             padding: 60px;
@@ -246,8 +247,7 @@
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 extract($row);
 
-                // --- LOGIQUE D'ÉTAT ---
-                // 'en_commande', 'en_livraison', 'acheve'
+                // transcription état de la commande => état affiché
                 if ($etat === 'acheve') {
                     $etat_label = 'Terminée';
                     $etat_css = 'status-finished';
@@ -261,11 +261,9 @@
 
                 $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
 
-                // --- AFFICHAGE CARTE CLIQUABLE ---
                 echo "<a href='detail_commande.php?id={$commande_id}' class='card-link'>";
                     echo "<div class='commande-card'>";
-                        
-                        // En-tête (Nom + Date + Badge)
+
                         echo "<div class='card-header'>";
                             echo "<div>";
                                 echo "<h3 class='resto-name'>{$restaurant_nom}</h3>";
@@ -274,7 +272,6 @@
                             echo "<span class='status-badge {$etat_css}'>{$etat_label}</span>";
                         echo "</div>";
 
-                        // Corps (Adresse + Prix)
                         echo "<div class='card-body'>";
                             echo "<div class='address-info'>";
                                 echo "<span class='address-label'>Lieu de commande :</span>";
@@ -290,7 +287,6 @@
                 echo "</a>";
             }
         } else {
-            // État vide
             echo "<div class='no-commandes'>";
                 echo "<h3>C'est bien vide ici... 😔</h3>";
                 echo "<p>Vous n'avez pas encore d'historique de commandes.</p>";

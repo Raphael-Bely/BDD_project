@@ -1,3 +1,13 @@
+<?php
+// Contrôleur utilisé : login_restaurateur.php
+// Informations transmises (Vue -> Contrôleur via POST) :
+// - nom : Champ présent dans le formulaire (mais non utilisé pour la logique de connexion dans ce contrôleur).
+// - email : L'adresse email utilisée comme identifiant principal.
+// - mot_de_passe : Le mot de passe pour l'authentification.
+
+// Informations importées (Contrôleur -> Vue) :
+// - error : Variable contenant le message d'erreur à afficher en cas d'échec de connexion (ex: "Identifiants incorrects").
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -50,7 +60,6 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
-            /* Pour que le padding ne casse pas la largeur */
             font-size: 16px;
         }
 
@@ -106,7 +115,6 @@
         <h2>Connexion 🔐</h2>
 
         <?php
-        // Affichage du message d'erreur si la variable existe et n'est pas vide
         if (isset($error) && !empty($error)): ?>
             <div class="error-msg">
                 <?= htmlspecialchars($error) ?>

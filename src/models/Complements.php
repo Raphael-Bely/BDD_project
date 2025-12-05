@@ -6,11 +6,13 @@ class Complements
 {
     private $conn;
 
+    // Database connection initialization.
     public function __construct($db)
     {
         $this->conn = $db;
     }
 
+    // Retrieve complements for a specific item.
     public function getComplements($item_id)
     {
         $query = Query::loadQuery('sql_requests/getComplements.sql');
@@ -20,6 +22,7 @@ class Complements
         return $stmt;
     }
 
+    // Link a complement item to a main item.
     public function addComplement($item_id1, $item_id2)
     {
         $query = Query::loadQuery('sql_requests/addComplement.sql');
@@ -29,6 +32,7 @@ class Complements
         return $stmt->execute();
     }
 
+    // Remove a complement link between items.
     public function deleteComplement($item_id1, $item_id2)
     {
         $query = Query::loadQuery('sql_requests/deleteComplement.sql');

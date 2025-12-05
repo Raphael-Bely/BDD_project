@@ -6,13 +6,16 @@ error_reporting(E_ALL);
 require_once './config/Database.php';
 require_once './models/Fidelite.php';
 
-// Vérification de connexion
 if (!isset($_SESSION['client_id'])) {
     header("Location: login.php");
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_SESSION['is_guest']) && $_SESSION['is_guest'] == true) {
+        header("Location: index.php?error=avis_fail");
+        exit();
+    }
     $note = intval($_POST['note']);
     $contenu = trim($_POST['contenu']);
     $restaurant_id = intval($_POST['restaurant_id']);
@@ -29,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// En cas d'erreur
 header("Location: index.php?error=avis_fail");
 exit();
 ?>

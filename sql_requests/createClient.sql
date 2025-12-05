@@ -1,4 +1,4 @@
--- Create a new client account
+-- Create a new customer account
 
 INSERT INTO clients (nom, email, telephone, adresse) 
 VALUES (?, ?, ?, ?)

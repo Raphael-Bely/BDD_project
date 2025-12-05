@@ -1,4 +1,4 @@
--- List restaurants ranked by descending average cost of main dishes (categorie_item_id = 2)
+-- List of restaurants sorted in descending order by average cost of main course (category_item_id = 2)
 
 SELECT r.nom,
        r.adresse,

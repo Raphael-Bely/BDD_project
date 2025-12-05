@@ -1,3 +1,23 @@
+<?php
+// Contrôleur utilisé : index.php (pour l'affichage principal) et ajout_avis.php (pour le formulaire)
+
+// Informations transmises (Vue -> Contrôleur via GET) :
+// - cat_id : L'ID de la catégorie pour filtrer la liste (clic sur un bouton filtre).
+// - action=geo, lat, lon : Les coordonnées GPS et l'action déclenchée par le JavaScript pour la recherche par proximité.
+// - id : L'ID du restaurant transmis vers menu.php (clic sur la carte) ou avis_restaurant.php (clic sur les étoiles).
+
+// Informations transmises (Vue -> Contrôleur via POST - Modal) :
+// - restaurant_id, note, contenu : Données du formulaire d'avis envoyées vers le script 'ajout_avis.php'.
+
+// Informations importées (Contrôleur -> Vue) :
+// - Données Session : est_connecte, nom_client, is_guest (pour les badges), is_admin (pour le lien statistiques).
+// - Navigation : categories (liste pour les filtres), current_cat (pour mettre en surbrillance le filtre actif).
+// - Données Restaurants : 
+//      - stmt (Résultats si recherche GPS).
+//      - stmt_open (Restaurants ouverts).
+//      - stmt_close (Restaurants fermés).
+//      - titre_special ou stmt_cat (Pour le titre dynamique de la page).
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -7,8 +27,6 @@
     <title>Restaurants</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ... VOS STYLES CSS PRÉCÉDENTS ... */
-        /* Je remets le CSS essentiel pour la complétude du fichier */
         :root {
             --bg-body: #f8f9fa;
             --text-main: #2c3e50;
@@ -387,7 +405,6 @@
         </div>
 
         <?php
-        // --- FONCTION D'AFFICHAGE COMMUNE ---
         function afficherCarte($row, $est_connecte, $isOpen = true)
         {
             $id = $row['restaurant_id'];
@@ -401,11 +418,10 @@
 
             echo "<div class='restaurant-card $cssClass'>";
 
-            // 1. LIEN GLOBAL (VERS MENU) uniquement si ouvert
             if ($isOpen) {
+                // lien vers la carte
                 echo "<a href='menu.php?id={$id}' class='card-link-overlay'></a>";
             } else {
-                // Add a non-clickable overlay to block interactions when closed
                 echo "<div class='card-link-overlay' style='cursor:not-allowed;' title='Restaurant fermé'></div>";
             }
 
@@ -415,7 +431,7 @@
             echo "<span class='card-title'>{$nom}</span>";
             echo "</div>";
 
-            // 2. LIEN AVIS (VERS AVIS_RESTAURANT)
+            // lien pour voir les avis
             echo "<a href='avis_restaurant.php?id={$id}' class='review-section' title='Lire les avis'>";
             echo "<span class='stars' style='margin-right:8px;'>";
             for ($i = 1; $i <= 5; $i++)
@@ -424,7 +440,7 @@
             echo "<span style='font-weight:bold; color:#2c3e50; margin-right:5px; font-size:0.95em;'>" . number_format($note, 1) . " / 5</span>";
             echo "<span style='font-size:0.85em; color:#95a5a6;'>(" . $nb_avis . ")</span>";
 
-            // CRAYON MODAL (HORS DU LIEN AVIS, MAIS DANS LA ZONE VISUELLE)
+            // pour écrire un commentaire
             if ($est_connecte) {
                 echo "<div class='btn-avis' onclick='event.preventDefault(); event.stopPropagation(); openAvisModal($id, \"" . addslashes($nom) . "\")' title='Laisser un avis'>✎</div>";
             }
@@ -437,12 +453,11 @@
 
             echo "<p class='card-address'>📍 {$adresse}</p>";
 
-            echo "</div>"; // Fin restaurant-card
+            echo "</div>";
         }
 
-        // --- LOGIQUE PRINCIPALE ---
-        
-        // CAS 1 : RECHERCHE GPS (Affichage unique)
+
+        // recherche gps
         if ($lat) {
             echo "<h2 class='section-title'>";
             echo htmlspecialchars($titre_special);
@@ -459,25 +474,24 @@
             echo "</div>";
 
         }
-        // CAS 2 : CATÉGORIE OU ACCUEIL (Affichage séparé Ouvert/Fermé)
+        // affichage catégories + ouvert/fermé
         else {
 
-            // Affichage du titre de catégorie si présent
+            // catégories
             if (isset($stmt_cat)) {
-                // stmt_cat peut être un statement ou un tableau selon votre modèle
                 if (is_object($stmt_cat)) {
                     $catInfo = $stmt_cat->fetch(PDO::FETCH_ASSOC);
                     $catName = $catInfo['nom'];
                 } elseif (is_array($stmt_cat) && !empty($stmt_cat)) {
                     $catName = $stmt_cat['nom'];
-                } // Si fetch déjà fait
-        
+                }
+
                 if (isset($catName)) {
                     echo "<h2 class='section-title'>Catégorie : " . htmlspecialchars($catName) . "</h2>";
                 }
             }
 
-            // A. OUVERTS
+            // ouvert
             echo "<div class='section-header'><span class='status-dot dot-open'></span><h2 class='section-title'>Ouvert maintenant</h2></div>";
             echo "<div class='restaurant-grid'>";
             if (isset($stmt_open) && $stmt_open->rowCount() > 0) {
@@ -489,7 +503,7 @@
             }
             echo "</div>";
 
-            // B. FERMÉS
+            // fermé
             echo "<div class='section-header'><span class='status-dot dot-closed'></span><h2 class='section-title' >Actuellement fermé</h2></div>";
             echo "<div class='restaurant-grid'>";
             if (isset($stmt_close) && $stmt_close->rowCount() > 0) {
@@ -505,7 +519,7 @@
 
     </div>
 
-    <div id="modalAvis" class="modal-overlay">
+    <<<<<<< HEAD <div id="modalAvis" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAvisModal()">&times;</span>
             <h3 id="modalRestoName">Noter ce restaurant</h3>
@@ -531,32 +545,40 @@
                     l'avis</button>
             </form>
         </div>
-    </div>
+        </div>
 
-    <script>
-        // Scripts inchangés
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
-            } else {
-                alert("La géolocalisation n'est pas supportée.");
+        <script>
+            // Scripts inchangés
+            function getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(showPosition, showError);
+                } else {
+                    alert("La géolocalisation n'est pas supportée.");
+                }
+=======
+<script>
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("La géolocalisation n'est pas supportée.");
+>>>>>>> 738b5448199a61f02b208d8711746e87b32bf3ad
             }
-        }
-        function showPosition(position) {
-            window.location.href = "index.php?action=geo&lat=" + position.coords.latitude + "&lon=" + position.coords.longitude;
-        }
-        function showError(error) { alert("Erreur de géolocalisation."); }
-        function openAvisModal(id, nom) {
-            document.getElementById('modalRestoId').value = id;
-            document.getElementById('modalRestoName').innerText = "Noter : " + nom;
-            document.getElementById('modalAvis').style.display = 'flex';
-        }
-        function closeAvisModal() { document.getElementById('modalAvis').style.display = 'none'; }
-        window.onclick = function (event) {
-            var modal = document.getElementById('modalAvis');
-            if (event.target == modal) { modal.style.display = "none"; }
-        }
-    </script>
+            function showPosition(position) {
+                window.location.href = "index.php?action=geo&lat=" + position.coords.latitude + "&lon=" + position.coords.longitude;
+            }
+            function showError(error) { alert("Erreur de géolocalisation."); }
+            function openAvisModal(id, nom) {
+                document.getElementById('modalRestoId').value = id;
+                document.getElementById('modalRestoName').innerText = "Noter : " + nom;
+                document.getElementById('modalAvis').style.display = 'flex';
+            }
+            function closeAvisModal() { document.getElementById('modalAvis').style.display = 'none'; }
+            window.onclick = function (event) {
+                var modal = document.getElementById('modalAvis');
+                if (event.target == modal) { modal.style.display = "none"; }
+            }
+        </script>
 
 </body>
 

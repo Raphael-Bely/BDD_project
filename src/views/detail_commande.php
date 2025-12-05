@@ -1,3 +1,14 @@
+<?php
+// Contrôleur utilisé : detail_commande.php
+// Informations transmises (Vue -> Contrôleur via GET) :
+// - id (depuis l'URL) : L'identifiant unique de la commande spécifique à afficher.
+
+// Informations importées (Contrôleur -> Vue) :
+// - commande_info : Tableau associatif contenant les détails principaux de la commande (nom du restaurant, adresse, date, prix total, heure de retrait).
+// - liste_articles : Tableau des articles individuels commandés (nom, prix, quantité, spécifications).
+// - liste_formules : Tableau structuré des formules commandées (nom du menu, prix, liste des items composants).
+// - client_id (via Session) : Utilisé pour vérifier la propriété de la commande et afficher les liens de navigation.
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -8,7 +19,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- RESET & GLOBAL --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
@@ -35,7 +45,6 @@
             text-decoration: underline;
         }
 
-        /* --- CARTE COMMANDE --- */
         .commande-card {
             background: white;
             border-radius: 16px;
@@ -46,7 +55,6 @@
             border: 1px solid #e5e7eb;
         }
 
-        /* --- EN-TÊTE DE LA CARTE --- */
         .commande-header {
             background-color: #f9fafb;
             padding: 24px;
@@ -59,7 +67,6 @@
             color: #111827;
         }
 
-        /* --- INFO COMMANDE --- */
         .commande-info {
             padding: 20px 24px;
             background-color: #ffffff;
@@ -75,7 +82,6 @@
             color: #6b7280;
         }
 
-        /* --- SECTION ITEMS/FORMULES --- */
         h3 {
             color: #111827;
             font-size: 1.2rem;
@@ -83,7 +89,6 @@
             font-weight: 700;
         }
 
-        /* --- TABLEAU --- */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -122,7 +127,6 @@
             margin-top: 4px;
         }
 
-        /* --- RÉSUMÉ PRIX --- */
         .resume-prix {
             background-color: #f9fafb;
             padding: 20px 24px;
@@ -145,7 +149,6 @@
             border-top: 1px solid #d1d5db;
         }
 
-        /* --- BOUTONS D'ACTION --- */
         .actions {
             padding: 20px 24px;
             display: flex;
@@ -186,7 +189,6 @@
             background-color: #059669;
         }
 
-        /* --- MESSAGE VIDE --- */
         .empty-message {
             text-align: center;
             padding: 60px 20px;
@@ -239,7 +241,7 @@
     }
     echo "</div>";
 
-    // AFFICHAGE DES FORMULES
+    // formules
     if (!empty($commande_info['liste_formules'])) {
         echo "<h3>🍱 Formules</h3>";
 
@@ -267,7 +269,7 @@
         echo "</table>";
     }
 
-    // AFFICHAGE DES ARTICLES
+    // articles
     if (!empty($commande_info['liste_articles'])) {
         echo "<h3>🍽️ Articles à la carte</h3>";
 
@@ -299,7 +301,7 @@
         echo "</table>";
     }
 
-    // RÉSUMÉ DES PRIX
+    // prix
     echo "<div class='resume-prix'>";
     echo "<p class='total'>";
     echo "<span>Total</span>";
@@ -307,7 +309,7 @@
     echo "</p>";
     echo "</div>";
 
-    echo "</div>"; // fin commande-card
+    echo "</div>"; 
     ?>
 
 </body>

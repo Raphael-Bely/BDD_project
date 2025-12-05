@@ -1,3 +1,13 @@
+<?php
+// Contrôleur utilisé : formules.php
+// Informations transmises (Vue -> Contrôleur via GET) :
+// - id (depuis l'URL) : L'identifiant du restaurant dont on veut afficher les formules.
+
+// Informations importées (Contrôleur -> Vue) :
+// - restaurant_id : L'ID du restaurant, utilisé pour le lien de retour et les liens de sélection de formule.
+// - info_formules : Objet PDOStatement contenant les résultats bruts de la requête SQL (liste des formules et de leurs composants).
+// - client_id, is_guest (via Session) : Utilisés pour afficher ou masquer les liens de navigation utilisateur (Panier, Historique).
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -40,7 +50,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
             border-left: 5px solid #e67e22;
-            /* Orange pour les formules */
             transition: transform 0.2s;
         }
 
@@ -84,7 +93,6 @@
             align-items: center;
         }
 
-        /* Petite puce stylisée */
         .composition-item::before {
             content: "✔";
             color: #27ae60;
@@ -101,7 +109,6 @@
             font-style: italic;
         }
 
-        /* ... vos autres styles ... */
 
         .btn-choisir {
             display: block;
@@ -148,24 +155,23 @@
 
         if ($info_formules->rowCount() > 0) {
 
-            // --- ÉTAPE 1 : REGROUPEMENT ---
+            // regroupement des informations sur les formules
             while ($row = $info_formules->fetch(PDO::FETCH_ASSOC)) {
                 $nom = $row['nom'];
 
                 if (!isset($formules_organisees[$nom])) {
                     $formules_organisees[$nom] = [
-                        'id' => $row['formule_id'], // <--- IMPORTANT : On stocke l'ID ici
+                        'id' => $row['formule_id'], 
                         'prix' => $row['prix'],
                         'composition' => []
                     ];
                 }
 
-                // On ajoute la catégorie (composant) à cette formule
-                // (Assurez-vous que votre requête SQL renvoie bien 'nom_categorie')
+                // on rentre les catégories d'item dans la description de la formule
                 $formules_organisees[$nom]['composition'][] = $row['nom_categorie'];
             }
 
-            // --- ÉTAPE 2 : AFFICHAGE ---
+            // affichage
             foreach ($formules_organisees as $nom_formule => $details) {
                 ?>
                 <div class="formule-card">

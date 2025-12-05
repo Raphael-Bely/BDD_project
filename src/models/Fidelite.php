@@ -6,11 +6,13 @@ class Fidelite
 {
     private $conn;
 
+    // Database connection initialization.
     public function __construct($db)
     {
         $this->conn = $db;
     }
 
+    // Add or update loyalty points for a client at a restaurant.
     public function ajouterPoints($client_id, $restaurant_id, $montant_commande)
     {
         $points_a_ajouter = floor($montant_commande);
@@ -18,12 +20,14 @@ class Fidelite
             return false;
         }
 
+        // Verify if loyalty account exists
         $queryCheck = Query::loadQuery('sql_requests/checkFidelity.sql');
         $stmtCheck = $this->conn->prepare($queryCheck);
         $stmtCheck->bindParam(1, $client_id);
         $stmtCheck->bindParam(2, $restaurant_id);
         $stmtCheck->execute();
 
+        // if yes then update number of loyalty points
         if ($stmtCheck->rowCount() > 0) {
             $row = $stmtCheck->fetch(PDO::FETCH_ASSOC);
             $fidelite_id = $row['fidelite_id'];
@@ -32,7 +36,9 @@ class Fidelite
             $stmtUpdate->bindParam(1, $points_a_ajouter);
             $stmtUpdate->bindParam(2, $fidelite_id);
             return $stmtUpdate->execute();
-        } else {
+        } 
+        // if no then create the loyalty account with the right 
+        else {
             $queryCreate = Query::loadQuery('sql_requests/createFidelity.sql');
             $stmtCreate = $this->conn->prepare($queryCreate);
             $stmtCreate->bindParam(1, $client_id);
@@ -42,6 +48,7 @@ class Fidelite
         }
     }
 
+    // Get current loyalty points balance.
     public function getSolde($client_id, $restaurant_id)
     {
         $query = Query::loadQuery('sql_requests/checkFidelity.sql');
@@ -57,6 +64,7 @@ class Fidelite
         }
     }
 
+    // Get available rewards based on points balance.
     public function getRemisesDisponibles($restaurant_id, $solde_points)
     {        
         $query = Query::loadQuery('sql_requests/getRemisesDisponibles.sql');
@@ -68,6 +76,7 @@ class Fidelite
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Deduct points when a reward is used.
     public function utiliserPoints($client_id, $restaurant_id, $cout_points)
     {
         $cout = intval($cout_points);
@@ -83,11 +92,13 @@ class Fidelite
         return $stmt->execute();
     }
 
+    // Add a review and create loyalty record if missing.
     public function ajouterAvis($client_id, $restaurant_id, $note, $contenu)
     {
         try {
             $this->conn->beginTransaction();
-
+            
+            // Verify if loyalty account exists
             $queryCheck = Query::loadQuery('sql_requests/checkFidelity.sql');
             $stmtCheck = $this->conn->prepare($queryCheck);
             $stmtCheck->bindParam(1, $client_id);
@@ -100,28 +111,22 @@ class Fidelite
             if ($row) {
                 
                 $fid_id = $row['fidelite_id'];
-            } else {
-                $points = 0;
-                $queryCreate = Query::loadQuery('sql_requests/createFidelity.sql');
-                $stmtCreate = $this->conn->prepare($queryCreate);
-                $stmtCreate->bindParam(1, $client_id);
-                $stmtCreate->bindParam(2, $restaurant_id);
-                $stmtCreate->bindParam(3, $points);
-                $stmtCreate->execute();
+            
 
-                $fid_id = $stmtCreate->fetchColumn();
+                if (!$fid_id) {
+                    throw new Exception("Impossible de récupérer l'ID fidélité.");
+                }
+
+                $queryCommentaire = Query::loadQuery('sql_requests/addComment.sql');
+                $stmt_com = $this->conn->prepare($queryCommentaire);
+                $stmt_com->execute([$contenu, $note, $fid_id]);
+
+                $this->conn->commit();
+                return true;
             }
-
-            if (!$fid_id) {
-                throw new Exception("Impossible de récupérer l'ID fidélité.");
+            else {
+                return false;
             }
-
-            $queryCommentaire = Query::loadQuery('sql_requests/addComment.sql');
-            $stmt_com = $this->conn->prepare($queryCommentaire);
-            $stmt_com->execute([$contenu, $note, $fid_id]);
-
-            $this->conn->commit();
-            return true;
 
         } catch (Exception $e) {
             $this->conn->rollBack();
@@ -129,6 +134,7 @@ class Fidelite
         }
     }
 
+    // Retrieve all reviews for a specific restaurant.
     public function getAvisByRestaurant($restaurant_id)
     {
         $query = Query::loadQuery('sql_requests/getCommentsByRestaurant.sql');

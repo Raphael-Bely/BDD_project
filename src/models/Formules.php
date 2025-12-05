@@ -5,11 +5,13 @@ class Formule
 {
     private $conn;
 
+    // Database connection initialization.
     public function __construct($db)
     {
         $this->conn = $db;
     }
 
+    // Get items composing a specific formula.
     public function getComposition($formule_id)
     {
         $query = Query::loadQuery('sql_requests/getComposition.sql');
@@ -19,12 +21,13 @@ class Formule
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Create a new formula with items and availability conditions.
     public function createFormule($nom, $prix, $resto_id, $categories_ids, $conditions_data)
     {
 
-        // Transaction atomique, soit tout ce passe bien soit rien ne se passe
+        // Atomic transaction to ensure data integrity.
         try {
-            // Ecriture "au brouillon"
+            // Start transaction.
             $this->conn->beginTransaction();
 
             $query = Query::loadQuery("sql_requests/createFormula.sql");
@@ -44,16 +47,16 @@ class Formule
 
             if (!empty($conditions_data)) {
 
-                // Requête pour vérifier l'existence
+                // Check if condition exists.
                 $sql_check = Query::loadQuery("sql_requests/checkConditions.sql");
                 $stmt_check = $this->conn->prepare($sql_check);
 
-                // Requête pour créer si inexistant
+                // Create condition if not exists.
                 $sql_create_cond = Query::loadQuery("sql_requests/createConditions.sql");
                 $stmt_create_cond = $this->conn->prepare($sql_create_cond);
 
-                // Requête pour lier à la formule
-                $sql_link = "INSERT INTO avoir_conditions_formules (formule_id, condition_formule_id) VALUES (?, ?)";
+                // Link condition to formula.
+                $sql_link = Query::loadQuery("sql_requests/linkConditionToFormule.sql");
                 $stmt_link = $this->conn->prepare($sql_link);
 
                 foreach ($conditions_data as $cond) {
@@ -61,31 +64,33 @@ class Formule
                     $debut = $cond['debut'];
                     $fin = $cond['fin'];
 
-                    // A. On vérifie si ce créneau existe déjà
+                    // Check existence.
                     $stmt_check->execute([$jour, $debut, $fin]);
                     $cond_id = $stmt_check->fetchColumn();
 
-                    // B. S'il n'existe pas, on le crée
+                    // Create if missing.
                     if (!$cond_id) {
                         $stmt_create_cond->execute([$jour, $debut, $fin]);
                         $cond_id = $stmt_create_cond->fetchColumn();
                     }
 
-                    // C. On lie la condition (existante ou nouvelle) à la formule
+                    // Link condition.
                     $stmt_link->execute([$formule_id, $cond_id]);
                 }
             }
 
-            // Si arrivé la alors écrire "au propre"
+            // Commit transaction.
             $this->conn->commit();
             return true;
 
         } catch (Exception $e) {
+            // Rollback transaction on error.
             $this->conn->rollBack();
             return false;
         }
     }
 
+    // Retrieve all available formula conditions.
     public function getAllConditions()
     {
         $sql = "SELECT condition_formule_id, jour_disponibilite, creneau_horaire_debut, creneau_horaire_fin 

@@ -1,4 +1,19 @@
 <?php
+/*
+Résumé :
+    - Vérification de session : Redirection vers login si aucun client n'est connecté.
+    - Récupération du panier : Recherche de la commande active ("en cours") pour ce client via le modèle Commande.
+    - Gestion de la Fidélité (si client connecté non invité) :
+        - Récupération du solde de points actuel pour ce restaurant spécifique.
+        - Calcul des récompenses éligibles (remises) selon le solde.
+        - Application d'une remise : Si un paramètre `use_remise` est présent, calcul du montant de la réduction (pourcentage ou item offert) et soustraction au prix total.
+    - Calculs financiers : Détermination du prix final à payer (Prix initial - Réduction) et des points qui seront gagnés (basé sur le montant payé).
+    - Structuration des données : 
+        - Récupération des articles simples.
+        - Récupération et regroupement des formules (plusieurs lignes SQL fusionnées en un objet "Formule" avec liste d'ingrédients).
+    - Chargement de la vue : Affichage du récapitulatif avec gestion visuelle spécifique pour les invités (incitation à créer un compte).
+*/
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 

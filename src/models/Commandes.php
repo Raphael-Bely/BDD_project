@@ -6,11 +6,14 @@ require_once 'Fidelite.php';
 class Commande
 {
     private $conn;
+
+    // Database connection initialization.
     public function __construct($db)
     {
         $this->conn = $db;
     }
 
+    // Retrieve the current active order for a client.
     public function getCurrentCommande($client_id)
     {
         $query = Query::loadQuery('sql_requests/getCurrentOrder.sql');
@@ -20,6 +23,7 @@ class Commande
         return $stmt;
     }
 
+    // Delete the current order from the database.
     public function suppressCurrentCommande($commande_id)
     {
         $query = Query::loadQuery('sql_requests/deleteCurrentOrder.sql');
@@ -29,6 +33,7 @@ class Commande
         return $stmt;
     }
 
+    // Retrieve all individual items associated with an order.
     public function afficherItemCommande($commande_id)
     {
         $query = Query::loadQuery('sql_requests/getAllItemsInOrder.sql');
@@ -38,6 +43,7 @@ class Commande
         return $stmt;
     }
 
+    // Retrieve all formulas associated with an order.
     public function afficherFormulesCommande($commande_id)
     {
         $query = Query::loadQuery('sql_requests/getAllFormulasInOrder.sql');
@@ -47,6 +53,7 @@ class Commande
         return $stmt;
     }
 
+    // Add an item to the cart using a stored procedure (see function in create.sql).
     public function ajouterAuPanier($client_id, $resto_id, $item_id)
     {
         $query = "SELECT ajouter_au_panier(?, ?, ?)";
@@ -57,6 +64,7 @@ class Commande
         return $stmt->execute();
     }
 
+    // Add a complete formula with its items using a stored procedure. (see function in create.sql)
     public function addFullFormuleToOrder($client_id, $resto_id, $formule_id, $items_ids)
     {
         $pg_array = "{" . implode(',', $items_ids) . "}";
@@ -69,7 +77,7 @@ class Commande
         return $stmt->execute();
     }
 
-
+    // Finalize the order, update price, and add loyalty points.
     public function confirmOrder($commande_id, $client_id, $restaurant_id, $prix_total, $heure_retrait, $est_asap = false, $accorder_points = true)
     {
         try {
@@ -110,6 +118,7 @@ class Commande
         }
     }
 
+    // Retrieve the order history for a specific client.
     public function getHistoriqueCommandes($client_id)
     {
         $query = Query::loadQuery('sql_requests/getOrderHistory.sql');
@@ -119,6 +128,7 @@ class Commande
         return $stmt;
     }
 
+    // Retrieve orders currently in progress.
     public function getCommandesEnCours($client_id)
     {
         $query = Query::loadQuery('sql_requests/getOngoingOrders.sql');
@@ -128,6 +138,7 @@ class Commande
         return $stmt;
     }
 
+    // Mark the order as completed/received.
     public function marquerCommeRecue($commande_id)
     {
         $query = "UPDATE commandes SET etat = 'acheve' WHERE commande_id = :commande_id";
@@ -136,6 +147,7 @@ class Commande
         return $stmt->execute();
     }
 
+    // Get detailed information about a specific order.
     public function getCommandeDetails($commande_id, $client_id)
     {
         $query = Query::loadQuery('sql_requests/getOrderDetails.sql');
@@ -146,6 +158,7 @@ class Commande
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Check if the order belongs to the given client.
     public function isOrderOwnedByClient($commande_id, $client_id)
     {
         $query = Query::loadQuery('sql_requests/getClientWithOrder.sql');
@@ -155,6 +168,7 @@ class Commande
         return ($result && $result['client_id'] == $client_id);
     }
 
+    // Count the number of active orders for a client.
     public function countOrdersEnCours($client_id)
     {
         $query = Query::loadQuery('sql_requests/countOngoingOrders.sql');

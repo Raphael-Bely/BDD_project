@@ -1,5 +1,15 @@
 <?php
-// src/configurer_formule.php
+/*
+Résumé :
+    - Gestion de Session (Pattern Wizard) : Utilise une variable de session (`$_SESSION['formule']`) pour persister l'état de la configuration entre les différentes pages, car le protocole HTTP est sans état.
+    - Initialisation : Au premier appel (action=init), récupère la structure de la formule (quelles catégories, dans quel ordre) depuis la BDD via le modèle Formule et initialise le compteur d'étapes à 0.
+    - Traitement d'étape : À chaque soumission POST, sauvegarde l'item choisi dans la session et incrémente le compteur d'étape.
+    - Vérification de complétude : 
+        - Si toutes les étapes sont validées (compteur >= nombre d'étapes), appelle le modèle Commande (`addFullFormuleToOrder`) pour sauvegarder la formule complète et ses composants en une seule transaction.
+        - Nettoie la session et redirige vers le menu.
+    - Préparation de l'affichage : Si la configuration continue, identifie la catégorie requise pour l'étape actuelle et récupère via le modèle Plat tous les items disponibles pour cette catégorie spécifique dans ce restaurant.
+*/
+
 session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);

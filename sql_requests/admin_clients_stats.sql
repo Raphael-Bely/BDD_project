@@ -1,5 +1,4 @@
--- List clients with accounts (excluding guests and admin) with order count and total amount
-
+-- List of customers with accounts (excluding guests and administrators) with the number of orders and the total amount
 SELECT c.nom,
        c.email,
        COUNT(DISTINCT co.commande_id) AS nb_commandes,

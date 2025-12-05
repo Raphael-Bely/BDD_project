@@ -1,4 +1,16 @@
 <?php
+/*
+Résumé :
+    - Vérification de l'authentification : Vérifie si l'utilisateur est connecté (via la session). Redirige vers la page de connexion si ce n'est pas le cas.
+    - Validation des entrées : S'assure que le paramètre 'id' (ID de la commande) est présent et qu'il est numérique.
+    - Sécurité / Autorisation : Vérifie que la commande demandée appartient bien au client connecté en utilisant la méthode `isOrderOwnedByClient`. L'accès est refusé et le script arrêté si la vérification échoue.
+    - Récupération des données (Infos principales) : Récupère les détails généraux de la commande (date, total, infos restaurant) via le modèle `Commande`.
+    - Récupération des données (Articles) : Récupère tous les articles individuels associés à la commande.
+    - Récupération des données (Formules) : Récupère tous les composants de formules associés à la commande.
+    - Structuration des données : Traite les données brutes des formules (qui arrivent sous forme d'une ligne par item) pour les transformer en un tableau structuré où les items sont regroupés sous leur instance de formule parente.
+    - Rendu de la vue : Inclut le fichier de vue pour afficher les détails de la commande formatés.
+*/
+
 session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);

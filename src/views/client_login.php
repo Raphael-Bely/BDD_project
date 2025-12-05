@@ -1,3 +1,8 @@
+<?php
+// Contrôleur utilisée : login.php
+// Information transmises : nom, email (par post), bouton submit (pour activer la méthode post)
+// Information importés : error message, client id, client nom, is_admin (via session)
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -50,7 +55,6 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
-            /* Pour que le padding ne casse pas la largeur */
             font-size: 16px;
         }
 
@@ -106,7 +110,6 @@
         <h2>Connexion 🔐</h2>
 
         <?php
-        // Affichage du message d'erreur si la variable existe et n'est pas vide
         if (isset($error_message) && !empty($error_message)): ?>
             <div class="error-msg">
                 <?= htmlspecialchars($error_message) ?>

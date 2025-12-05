@@ -1,6 +1,7 @@
--- List restaurants in Bordeaux with order count from last 30 days
+-- List of restaurants in Bordeaux with their number of orders in the last month
+-- CURRENT_DATE: PostgreSQL function that returns today's date
 
-SELECT r.nom,
+SELECT r.nom, 
        COUNT(c.commande_id) AS nb_commandes_30j
 FROM restaurants r
 LEFT JOIN commandes c ON c.restaurant_id = r.restaurant_id

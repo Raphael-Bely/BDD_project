@@ -4,7 +4,6 @@ error_reporting(E_ALL);
 
 session_start();
 
-// Si c'est un invité, supprimer le compte temporaire
 if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true && isset($_SESSION['client_id'])) {
     require_once './config/Database.php';
 
@@ -13,7 +12,6 @@ if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true && isset($_SE
 
     $client_id = $_SESSION['client_id'];
 
-    // Supprimer le client invité
     $query = "DELETE FROM clients WHERE client_id = :client_id AND email LIKE 'invite_%@temp.local'";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':client_id', $client_id);
@@ -23,7 +21,7 @@ if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true && isset($_SE
 $_SESSION = array();
 
 
-//vider les cookies (miam)
+
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(

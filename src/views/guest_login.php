@@ -1,3 +1,12 @@
+<?php
+// Contrôleur utilisé : login_invite.php
+// Informations transmises (Vue -> Contrôleur via POST) :
+// - adresse (input) : L'adresse physique où la commande devra être livrée. C'est la seule information requise d'un invité.
+
+// Informations importées (Contrôleur -> Vue) :
+// - error_message : Message affiché en cas d'échec de la création du compte temporaire (ex: champ vide ou erreur SQL).
+// - client_id, client_nom, is_guest, guest_created_at (via Session) : Données de session initialisées après succès, permettant au reste de l'application de traiter l'invité comme un client connecté, mais avec des restrictions.
+?>
 <!DOCTYPE html>
 <html lang="fr">
 

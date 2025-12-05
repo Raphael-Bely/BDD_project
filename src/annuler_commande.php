@@ -1,5 +1,4 @@
 <?php
-// src/annuler_commande.php
 session_start();
 
 ini_set('display_errors', 1);
@@ -17,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commande_id'])) {
     $commande = new Commande($db);
 
     if ($commande->suppressCurrentCommande($commande_id)) {
-        // Succès : on redirige vers l'accueil ou la liste des commandes
         header("Location: commande.php");
         exit();
     } else {

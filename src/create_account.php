@@ -24,7 +24,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $client = new Client($db);
 
         if ($client->newClientEmailAlreadyExist($email) == false) {
-            // Sauvegarder l'ancien client_id si invité
             $ancien_client_id = null;
             if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true && isset($_SESSION['client_id'])) {
                 $ancien_client_id = $_SESSION['client_id'];
@@ -36,7 +35,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($result) {
                 $nouveau_client_id = $result['client_id'];
 
-                // Transférer les commandes de l'invité vers le nouveau compte
                 if ($ancien_client_id) {
                     $query = "UPDATE commandes SET client_id = :nouveau_id WHERE client_id = :ancien_id";
                     $stmt = $db->prepare($query);
@@ -44,7 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $stmt->bindParam(':ancien_id', $ancien_client_id);
                     $stmt->execute();
 
-                    // Supprimer l'ancien compte invité
                     $query_delete = "DELETE FROM clients WHERE client_id = :ancien_id AND email LIKE 'invite_%@temp.local'";
                     $stmt_delete = $db->prepare($query_delete);
                     $stmt_delete->bindParam(':ancien_id', $ancien_client_id);
@@ -53,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 $_SESSION['client_id'] = $nouveau_client_id;
                 $_SESSION['client_nom'] = $nom;
-                unset($_SESSION['is_guest']); // Supprimer le flag invité
+                unset($_SESSION['is_guest']);
 
                 header("Location: index.php");
                 exit();

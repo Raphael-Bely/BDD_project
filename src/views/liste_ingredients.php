@@ -1,3 +1,11 @@
+<?php
+// Contrôleur utilisé : composition.php
+// Informations transmises (Vue -> Contrôleur via GET) :
+// - item_id (depuis l'URL) : L'identifiant du plat dont on veut voir la composition.
+
+// Informations importées (Contrôleur -> Vue) :
+// - stmt : Objet PDOStatement contenant la liste des ingrédients (nom, quantité, kcal, protéines) récupérée via le modèle Ingredient.
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>

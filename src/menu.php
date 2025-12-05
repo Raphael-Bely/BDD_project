@@ -1,5 +1,17 @@
 <?php
-
+/*
+Résumé :
+    - Validation d'entrée : Vérifie que l'ID du restaurant est présent et valide.
+    - Initialisation : Connexion à la BDD et chargement des modèles Restaurant et Plat.
+    - Récupération du Menu : Charge tous les plats du restaurant, en incluant un indicateur booléen (has_complements) si le plat possède des options (sauces, accompagnements).
+    - Gestion du Panier Actif : 
+        - Si un client est connecté, vérifie s'il a déjà une commande "en cours" (non payée) dans CE restaurant spécifique.
+        - Si oui, les informations de cette commande sont récupérées pour afficher le résumé dans la sidebar et activer les boutons de suppression d'items.
+    - Interactivité (Vue/JS) :
+        - Les boutons "+" et "-" sont conditionnés par l'état de connexion et l'existence d'une commande.
+        - Les compléments (sauces) sont chargés dynamiquement via AJAX (fetch) uniquement à la demande de l'utilisateur pour ne pas alourdir le chargement initial de la page.
+        - Le panier latéral se met à jour (via rechargement de page) après chaque action d'ajout/suppression.
+*/
 session_start();
 
 ini_set('display_errors', 1);

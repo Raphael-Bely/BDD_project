@@ -1,3 +1,22 @@
+<?php
+// Contrôleur utilisé : menu.php (pour l'affichage) et ajouter_item.php / supprimerItemCommande.php / complements.php (via actions)
+
+// Informations transmises (Vue -> Contrôleur via GET) :
+// - id : L'ID du restaurant dont on veut voir le menu.
+// - item_id (vers complements.php via AJAX) : Pour charger les compléments d'un plat.
+
+// Informations transmises (Vue -> Contrôleur via POST) :
+// - item_id, restaurant_id (vers ajouter_item.php) : Pour ajouter un plat simple ou un complément.
+// - commande_id, item_id (vers supprimerItemCommande.php) : Pour retirer un plat.
+// - commande_id (vers annuler_commande.php) : Pour vider le panier.
+
+// Informations importées (Contrôleur -> Vue) :
+// - restaurant_info : Détails du restaurant (nom, adresse, etc.) pour l'en-tête.
+// - stmt_plats : Liste complète des plats triés par catégorie, avec info 'has_complements'.
+// - ma_commande (si client connecté) : État du panier en cours pour ce restaurant (ID, total, statut), utilisé pour afficher la sidebar panier et les boutons "-" (Retirer).
+// - client_id, is_guest : Pour gérer l'affichage des prix et l'autorisation de commander.
+// - current_resto_id : Pour les liens de navigation.
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -7,7 +26,6 @@
     <title>Carte du Restaurant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Variables & Base --- */
         :root {
             --bg-body: #f8f9fa;
             --text-main: #2c3e50;
@@ -37,7 +55,6 @@
             padding: 40px 20px;
         }
 
-        /* --- 2. HEADER GLOBAL --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -95,7 +112,6 @@
             border: 1px solid #ffeeba;
         }
 
-        /* --- 3. LAYOUT GRID --- */
         .layout-grid {
             display: grid;
             grid-template-columns: 1fr 320px;
@@ -109,7 +125,6 @@
             }
         }
 
-        /* --- 4. INFO RESTAURANT --- */
         .restaurant-header {
             text-align: center;
             margin-bottom: 30px;
@@ -122,7 +137,6 @@
             letter-spacing: -1px;
         }
 
-        /* --- 5. Navigation Secondaire --- */
         .sub-nav {
             display: flex;
             justify-content: space-between;
@@ -161,7 +175,6 @@
             box-shadow: 0 6px 12px rgba(211, 84, 0, 0.3);
         }
 
-        /* --- 6. LISTE DES PLATS --- */
         .category-header {
             background-color: var(--bg-body);
             padding: 15px 0;
@@ -246,7 +259,6 @@
             font-size: 1.25rem;
         }
 
-        /* BOUTONS D'ACTION (+ et -) */
         .btn-action-group {
             display: flex;
             align-items: center;
@@ -298,7 +310,6 @@
             transform: none;
         }
 
-        /* --- 7. SIDEBAR PANIER --- */
         .cart-sidebar {
             background: white;
             border-radius: 16px;
@@ -426,7 +437,6 @@
         }
         $current_resto_id = isset($restaurant_id) ? $restaurant_id : (isset($_GET['id']) ? $_GET['id'] : 0);
 
-        // --- RÉCUPÉRATION DE LA COMMANDE EN COURS (UNE FOIS POUR TOUTE LA PAGE) ---
         $ma_commande = null;
         if ($client_id && $stmt_commande_by_restau) {
             $ma_commande = $stmt_commande_by_restau->fetch(PDO::FETCH_ASSOC);
@@ -485,7 +495,6 @@
                             foreach ($les_plats as $plat) {
                                 echo "<div class='plat-item'>";
 
-                                // Infos
                                 echo "<div class='plat-info'>";
                                 echo "<div class='plat-name'>" . htmlspecialchars($plat['nom']);
                                 if (!empty($plat['proprietes'])) {
@@ -497,13 +506,11 @@
                                 echo "<a class='lien-ingredients' href='composition.php?item_id={$plat['item_id']}'>Voir ingrédients</a>";
                                 echo "</div>";
 
-                                // Actions (PRIX + BOUTONS)
                                 echo "<div class='plat-actions'>";
                                 echo "<span class='prix'>" . number_format($plat['prix'], 2, ',', ' ') . " €</span>";
 
                                 echo "<div class='btn-action-group'>";
 
-                                // 1. Bouton MOINS (-) : Affiché seulement si commande active
                                 if ($ma_commande) {
                                     echo "<form action='supprimerItemCommande.php' method='POST'>";
                                     echo "<input type='hidden' name='commande_id' value='" . $ma_commande['commande_id'] . "'>";
@@ -512,11 +519,9 @@
                                     echo "<button type='submit' class='btn-circle btn-remove' title='Retirer'>-</button>";
                                     echo "</form>";
                                 } else {
-                                    // Désactivé si pas de commande
                                     echo "<button class='btn-circle btn-disabled' disabled>-</button>";
                                 }
 
-                                // 2. Bouton PLUS (+)
                                 echo "<form action='ajouter_item.php' method='POST'>";
                                 echo "<input type='hidden' name='item_id' value='" . $plat['item_id'] . "'>";
                                 echo "<input type='hidden' name='restaurant_id' value='" . $current_resto_id . "'>";
@@ -546,7 +551,7 @@
                                     echo "</div>";
                                 }
 
-                                echo "</div>"; // Fin plat-item
+                                echo "</div>";
                             }
                         }
 
@@ -563,7 +568,6 @@
                 <?php
                 if ($client_id) {
                     if ($ma_commande) {
-                        // Commande EXISTE
                         echo "<div class='cart-info-row'>";
                         echo "<span>Commande #</span>";
                         echo "<strong>" . htmlspecialchars($ma_commande['commande_id']) . "</strong>";
@@ -586,14 +590,12 @@
                         echo "</form>";
 
                     } else {
-                        // Commande INEXISTANTE
                         echo "<div class='empty-cart'>";
                         echo "<p>Votre panier est vide ici.</p>";
                         echo "<span style='font-size:2rem;'>🍽️</span>";
                         echo "</div>";
                     }
                 } else {
-                    // PAS CONNECTÉ
                     echo "<div class='empty-cart'>";
                     echo "<a href='login.php' style='color:#2c3e50; font-weight:bold;'>Connectez-vous</a> pour commander.";
                     echo "</div>";
@@ -607,12 +609,10 @@
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
 
-                    // 1. Récupération propre des IDs
                     const itemId = this.dataset.itemId;
-                    const restaurantId = this.dataset.restoId; // On utilise uniquement celui-ci
+                    const restaurantId = this.dataset.restoId;
                     const platItem = this.closest('.plat-item');
 
-                    // 2. Toggle : fermeture si déjà ouvert
                     const existingList = platItem.querySelector('.complement-list');
                     if (existingList) {
                         existingList.remove();
@@ -620,10 +620,8 @@
                         return;
                     }
 
-                    // 3. Changement du texte
                     this.innerHTML = "Masquer compléments ▲";
 
-                    // 4. Appel AJAX
                     fetch('complements.php?item_id=' + itemId)
                         .then(response => response.json())
                         .then(data => {
@@ -637,7 +635,6 @@
                                 let html = '<div style="font-weight: 600; margin-bottom: 8px; color:#e67e22;">Compléments disponibles :</div>';
 
                                 data.forEach(comp => {
-                                    // Construction du HTML complet et valide
                                     html += `
                                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee;">
                                         <span>${htmlEscape(comp.nom)} (+${parseFloat(comp.prix).toFixed(2)}€)</span>

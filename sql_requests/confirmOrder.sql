@@ -1,4 +1,4 @@
--- Confirm an order by changing its status to 'en_livraison'
+-- Confirm the order by changing the status to “in delivery.”
 
 UPDATE commandes
 SET etat = 'en_livraison'

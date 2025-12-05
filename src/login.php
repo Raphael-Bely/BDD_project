@@ -1,5 +1,12 @@
 <?php
-// src/login.php
+/*
+Résumé : 
+    - vérification nom et email non vide
+    - vérification que le compte client existe dans la bd
+    - détection du status adminstrateur
+    - en cas de succès, redirection vers la liste des restaurants, sécurisation des identifiants via session
+    - en cas d'échec, message d'erreur transmi à la vue.
+*/
 
 // Utilisation des sessions au lieu de passer l'id dans l'url, bcp plus sécurisé, permet de ne pas changer de compte en modifiant l'utilisateur dans l'url.
 

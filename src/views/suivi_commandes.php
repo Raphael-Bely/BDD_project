@@ -1,3 +1,15 @@
+<?php
+// Contrôleur utilisé : suivi.php (qui inclut la vue) et marquer_recue.php (action du formulaire)
+
+// Informations transmises (Vue -> Contrôleur via POST) :
+// - commande_id : Identifiant de la commande envoyé au script 'marquer_recue.php' lorsque l'utilisateur confirme la réception.
+
+// Informations importées (Contrôleur -> Vue) :
+// - Données Session : client_id, client_nom, is_guest (pour l'affichage conditionnel du header et des alertes).
+// - stmt (PDOStatement) : Liste des commandes en cours, contenant pour chacune :
+//      - commande_id, date_commande, etat (statut interne), prix_total
+//      - restaurant_nom, restaurant_adresse, heure_retrait
+?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -7,7 +19,6 @@
     <title>Suivi de commande</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Variables & Base --- */
         :root {
             --bg-body: #f8f9fa;
             --text-main: #2c3e50;
@@ -37,7 +48,6 @@
             padding: 40px 20px;
         }
 
-        /* --- 2. HEADER UNIFIÉ --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -87,7 +97,6 @@
             text-decoration: underline;
         }
 
-        /* Badge Invité */
         .badge-guest {
             background-color: #fff3cd;
             color: #856404;
@@ -100,7 +109,6 @@
             border: 1px solid #ffeeba;
         }
 
-        /* --- 3. Titre --- */
         .section-title {
             font-size: 1.8rem;
             font-weight: 800;
@@ -110,7 +118,6 @@
             padding-left: 15px;
         }
 
-        /* --- 4. Info Box (Invité) --- */
         .info-box {
             background-color: var(--info-bg);
             color: var(--info-text);
@@ -128,7 +135,6 @@
             font-weight: bold;
         }
 
-        /* --- 5. Carte de Suivi --- */
         .commande-card {
             background: #ffffff;
             border-radius: 16px;
@@ -144,7 +150,6 @@
             box-shadow: var(--hover-shadow);
         }
 
-        /* Header de la carte */
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -167,7 +172,6 @@
             margin-top: 5px;
         }
 
-        /* Badge État (Pill) */
         .status-badge {
             padding: 8px 16px;
             border-radius: 50px;
@@ -178,15 +182,12 @@
 
         .status-processing {
             background-color: #fff3cd;
-            /* Jaune pastel */
             color: #856404;
         }
 
-        /* Détails */
         .card-body {
             display: grid;
             grid-template-columns: 1fr auto;
-            /* Infos à gauche, Prix à droite */
             gap: 20px;
             align-items: end;
             margin-bottom: 25px;
@@ -211,7 +212,6 @@
             text-align: right;
         }
 
-        /* Actions */
         .card-actions {
             display: flex;
             gap: 15px;
@@ -254,7 +254,6 @@
             box-shadow: 0 6px 12px rgba(39, 174, 96, 0.3);
         }
 
-        /* --- 6. Empty State --- */
         .no-commandes {
             text-align: center;
             padding: 60px;
@@ -333,7 +332,6 @@
 
                 echo "<div class='commande-card'>";
 
-                // Header Carte
                 echo "<div class='card-header'>";
                 echo "<div>";
                 echo "<h3 class='order-id'>Commande #{$commande_id}</h3>";
@@ -342,7 +340,6 @@
                 echo "<span class='status-badge status-processing'>⏳ {$etat_label}</span>";
                 echo "</div>";
 
-                // Corps Carte (Info + Prix)
                 echo "<div class='card-body'>";
                 echo "<div class='details-col'>";
                 echo "<div class='info-row'><span class='info-label'>Restaurant :</span> <strong>{$restaurant_nom}</strong></div>";
@@ -362,7 +359,6 @@
                 echo "<div class='total-price'>" . number_format($prix_total, 2, ',', ' ') . " €</div>";
                 echo "</div>";
 
-                // Actions
                 echo "<div class='card-actions'>";
                 echo "<a href='detail_commande.php?id={$commande_id}' class='btn-details'>📄 Détails</a>";
 

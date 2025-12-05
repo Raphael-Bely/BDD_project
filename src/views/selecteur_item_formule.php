@@ -1,3 +1,17 @@
+<?php
+// Contrôleur utilisé : configurer_formule.php
+// Informations transmises (Vue -> Contrôleur via GET - Initialisation) :
+// - action='init', formule_id : Déclencheurs pour démarrer une nouvelle configuration de formule depuis le menu.
+
+// Informations transmises (Vue -> Contrôleur via POST - Navigation) :
+// - item_id : L'identifiant de l'item choisi par le client pour l'étape en cours (ex: l'ID de la 'Salade César' pour l'étape 'Entrée').
+
+// Informations importées (Contrôleur -> Vue) :
+// - formule_info (Session) : Tableau contenant l'état global du wizard (étapes restantes, étape courante, choix déjà effectués).
+// - current_categorie : Les détails de la catégorie à afficher pour l'étape actuelle (ex: "Boisson").
+// - items_disponibles : La liste des plats éligibles pour cette étape (ex: liste des boissons du restaurant).
+// - client_id (Session) : Utilisé lors de la finalisation pour lier la commande au client.
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -25,7 +39,6 @@
             text-align: center;
         }
 
-        /* Barre de progression */
         .progress-container {
             background-color: #eee;
             border-radius: 10px;
@@ -36,7 +49,7 @@
         }
 
         .progress-bar {
-            background-color: #e67e22; /* Orange Formule */
+            background-color: #e67e22; 
             height: 100%;
             transition: width 0.4s ease;
         }
@@ -45,14 +58,12 @@
         .instruction { font-size: 1.2em; color: #7f8c8d; margin-bottom: 30px; }
         .categorie-highlight { color: #e67e22; font-weight: bold; }
 
-        /* Grille des items */
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
         }
 
-        /* Cartes Boutons */
         .item-card-btn {
             background: white;
             border: 2px solid #e0e0e0;
@@ -65,7 +76,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            width: 100%; /* Important pour le bouton */
+            width: 100%; 
         }
 
         .item-card-btn:hover {
@@ -82,7 +93,6 @@
             margin-bottom: 5px;
         }
 
-        /* Lien Annuler */
         .btn-cancel {
             display: inline-block;
             margin-top: 30px;
