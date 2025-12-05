@@ -1,27 +1,26 @@
 \documentclass[a4paper,12pt]{article}
 
-% --- PAQUETS ESSENTIELS ---
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[french]{babel} % Typographie française
-\usepackage{geometry}      % Marges
+\usepackage[french]{babel} 
+\usepackage{geometry}      
 \geometry{hmargin=2.5cm,vmargin=2.5cm}
-\usepackage{graphicx}      % Images
-\usepackage{hyperref}      % Liens
-\usepackage{float}         % Positionnement H
-\usepackage{titlesec}      % Titres
-\usepackage{xcolor}        % Couleurs
+\usepackage{graphicx}      
+\usepackage{hyperref}      
+\usepackage{float}         
+\usepackage{titlesec}      
+\usepackage{xcolor}        
 
-% --- CONFIGURATION DU CODE (SQL & PHP) ---
+
 \usepackage{listings}
 
-% Couleurs personnalisées
+
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
-% Style global avec gestion des ACCENTS français
+
 \lstdefinestyle{mystyle}{
     backgroundcolor=\color{backcolour},   
     commentstyle=\color{codegreen},
@@ -39,12 +38,10 @@
     showstringspaces=false,
     showtabs=false,                  
     tabsize=2,
-    % C'est ici qu'on règle le problème des accents dans le code :
     literate={é}{{\'e}}1 {è}{{\`e}}1 {à}{{\`a}}1 {ç}{{\c{c}}}1 {œ}{{\oe}}1 {ù}{{\`u}}1 {É}{{\'E}}1 {È}{{\`E}}1 {À}{{\`A}}1 {Ç}{{\c{C}}}1 {Œ}{{\OE}}1 {Ê}{{\^E}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
 }
 \lstset{style=mystyle}
 
-% --- INFOS DU DOCUMENT ---
 \title{\textbf{Rapport de Projet SGBD : Gestion de Menus de Restaurants}}
 \author{
     Abeille Thibault \\
@@ -56,12 +53,10 @@
 
 \begin{document}
 
-% Page de titre
 \maketitle
 \thispagestyle{empty}
 \newpage
 
-% Table des matières
 \tableofcontents
 \newpage
 
@@ -110,19 +105,20 @@ Nous avons implémenté les règles de gestion suivantes pour garantir la cohér
     \item \textbf{RG13 :} Si un client ajoute un item déjà présent dans sa commande, la quantité de cet item est incrémentée (pas de doublon de ligne).
     \item \textbf{RG14 :} Le prix total d'une commande est calculé et mis à jour automatiquement à chaque ajout, modification ou suppression d'item ou de formule.
     \item \textbf{RG15 :} La suppression d'une commande entraîne la suppression automatique de tout son contenu (items et formules).
+    \item \textbf{RG16 :} Le client devra renseigner une heure de livraison ne dépassant pas 5h après l'heure de la commande. Il pourra aussi choisir une option de livraison "au plus vite".
 \end{itemize}
 
 \paragraph{Formules (ou Menu)}
 \begin{itemize}
-    \item \textbf{RG16 :} Une formule est définie par un prix fixe et une structure de catégories (ex: 1 Entrée + 1 Plat).
-    \item \textbf{RG17 :} Une formule peut avoir des conditions de validité (jours de la semaine, horaires, midi/soir).
-    \item \textbf{RG18 :} Lors de l'achat d'une formule, les items choisis par le client sont liés à une instance spécifique de cette formule dans la commande, afin de distinguer les items "au menu" des items "à la carte".
+    \item \textbf{RG17 :} Une formule est définie par un prix fixe et une structure de catégories (ex: 1 Entrée + 1 Plat).
+    \item \textbf{RG18 :} Une formule peut avoir des conditions de validité (jours de la semaine, horaires, midi/soir).
+    \item \textbf{RG19 :} Lors de l'achat d'une formule, les items choisis par le client sont liés à une instance spécifique de cette formule dans la commande, afin de distinguer les items "au menu" des items "à la carte".
 \end{itemize}
 
 \paragraph{Géolocalisation}
 \begin{itemize}
-    \item \textbf{RG19 :} La recherche par proximité affiche uniquement les restaurants situés dans un rayon défini (par défaut 2km) autour de la position de l'utilisateur.
-    \item \textbf{RG20 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre.
+    \item \textbf{RG20 :} La recherche par proximité affiche uniquement les restaurants situés dans un rayon défini (par défaut 2km) autour de la position de l'utilisateur.
+    \item \textbf{RG21 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre.
 \end{itemize}
 
 \newpage
@@ -187,7 +183,6 @@ Cette modification structurelle permet désormais de :
 \end{itemize}
 \begin{figure}[h!]
     \centering
-    % Assurez-vous que le fichier est bien dans votre dossier projet
     \includegraphics[width=0.9\textwidth]{diagramme_entité_association_v1.pdf}
     \caption{Première version du diagramme Entité-Association}
     \label{fig:mcd_v1}
@@ -200,7 +195,7 @@ Cette modification structurelle permet désormais de :
 
 \subsection{Passage au relationnel}
 
-\begin{figure}[H] % Le [H] force l'image à rester ICI (nécessite \usepackage{float})
+\begin{figure}[H]
     \centering
     \includegraphics[width=1.1\textwidth]{schéma_relationnel.jpg}
     
@@ -317,7 +312,7 @@ Ce mécanisme recalcule la somme de tous les éléments et met à jour le champ 
 -- Trigger déclenché à chaque modification du contenu du panier
 CREATE TRIGGER trg_update_prix_items
 AFTER INSERT OR UPDATE OR DELETE ON contenir_items
-FOR EACH ROW
+FOR EACH ROWde liste déroulante dynamique
 EXECUTE FUNCTION update_prix_commande_func();
 \end{lstlisting}
 
@@ -350,10 +345,11 @@ Afin de guider les utilisateurs, un système de notation communautaire a été d
 \subsubsection{Prise de Commande par Plats et par Formules}
 La navigation dans le menu d'un restaurant propose deux modes de commande :
 \begin{enumerate}
-    \item \textbf{À la carte :} Ajout direct d'items au panier. Si l'item possède des variantes (sauces, accompagnements), un système de liste déroulante dynamique permet d'ajouter ces compléments.
+    \item \textbf{À la carte :} Ajout direct d'items au panier. Si l'item possède des accompagnements qui lui sont directement lié (sauces, accompagnements), un système permet de proposer l'ajout de ces compléments uniquement si l'item principal est choisi.
     \item \textbf{Par Formule :} Pour les menus complexes (ex: Entrée + Plat + Dessert), nous avons développé un \textit{configurateur étape par étape}. L'utilisateur ne voit que les plats éligibles pour l'étape en cours. La validation finale déclenche une transaction SQL atomique qui lie tous les items choisis à une instance unique de formule.
 \end{enumerate}
 Au fur et à mesure que la commande est créée, un petit aperçu de celle-ci est visible sur la droite de l'écran. Cela permet à l'utilisateur de savoir ce qu'il a commandé.
+L'utilisateur peut renseigner l'heure de livraison de sa commande.
 
 \subsubsection{Fidélité et Récompenses}
 Un système de gamification récompense les clients réguliers :
@@ -381,8 +377,8 @@ Cette interface sécurisée est dédiée aux professionnels pour la gestion de l
 \subsubsection{Gestion du Menu}
 Le restaurateur dispose d'outils lui permettant la création/insertion ainsi que certaines modifications et suppressions :
 \begin{itemize}
-    \item \textbf{Création de Plats :} Ajout de nouveaux items avec définition du prix, de la catégorie et association possible avec des compléments existants.
-    \item \textbf{Création de Formules :} Interface permettant de définir un prix global, de composer la structure du menu (ex: choisir les catégories "Entrée" et "Plat") et de définir des conditions de validité (jours, horaires).
+    \item \textbf{Création de Plats :} Ajout de nouveaux items avec définition du prix, de la catégorie et association possible avec des compléments existants. On peut gérer l'ajout d'ingrédients composant le plat (quantité, informations nutritionnelles), ainsi que la disponibilité du plat (sa visibilité pour le client).
+    \item \textbf{Création de Formules :} Interface permettant de définir un prix global, de composer la structure du menu (ex: choisir les catégories "Entrée" et "Plat") et de définir des conditions de validité (jours, horaires). On peut aussi supprimer les formules. La modification des attributs de formules n'a pas été mis en place.
     \item \textbf{Gestion des Horaires :} Ajout et suppression de créneaux horaires d'ouverture.
 \end{itemize}
 

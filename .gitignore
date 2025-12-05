@@ -9,4 +9,7 @@
 *.bbl
 *.pdf
 *.yml
+*.nav
+*.snm
+*.vrb
 Dockerfile
