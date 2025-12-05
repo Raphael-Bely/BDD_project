@@ -1,0 +1,178 @@
+\documentclass{beamer}
+
+% --- PAQUETS ET CONFIGURATION ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{listings} % Pour le code SQL
+\usepackage{xcolor}
+
+% --- THÈME ---
+\usetheme{Madrid}
+\usecolortheme{beaver} % Thème de couleur (Rouge/Gris)
+
+% --- CONFIGURATION DU CODE SQL ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=SQL
+}
+\lstset{style=mystyle}
+
+% --- INFOS DE LA PRÉSENTATION ---
+\title[Projet Base de Données]{Gestion de Commandes et Fidélité}
+\subtitle{Application "UberMiam"}
+
+\author[Abeille, Guiot, Picarel, Bely]{ 
+    Thibault ABEILLE \and
+    Numa GUIOT \and
+    Enzo PICAREL \and
+    Raphaël BELY
+}
+\date{\today}
+
+\begin{document}
+
+% ------------------------------------------------
+% SLIDE DE TITRE
+% ------------------------------------------------
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% ------------------------------------------------
+% SLIDE 1 : MODÈLE CONCEPTUEL
+% ------------------------------------------------
+\begin{frame}{1. Modèle Conceptuel (Entité-Association)}
+    \begin{columns}
+        \column{0.4\textwidth}
+        \textbf{Choix de conception :}
+        \begin{itemize}
+            \item \textbf{Clients / Restaurants} : Entités centrales.
+            \item \textbf{Fidélité} : Association porteuse de données (points) entre un Client et un Restaurant.
+            \item \textbf{Remises} : Spécialisation (Héritage) en \textit{ItemOffert} ou \textit{Pourcentage}.
+            \item \textbf{Formules} : Composition complexe d'items.
+        \end{itemize}
+
+        \column{0.6\textwidth}
+        \begin{figure}
+            \centering
+            % REMPLACEZ par le nom de votre image (ex: diagramme.png)
+            % Si vous n'avez pas l'image, le cadre 'demo' s'affichera
+            \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{schema_entite_association.jpg}
+            \caption{Diagramme E/A}
+        \end{figure}
+    \end{columns}
+\end{frame}
+
+% ------------------------------------------------
+% SLIDE 2 : MODÈLE RELATIONNEL
+% ------------------------------------------------
+\begin{frame}{2. Modèle Relationnel (Normalisé)}
+    passage au schéma relationnel en respectant la 3ème Forme Normale (3FN).
+    
+   \begin {figure}
+        \centering
+        % REMPLACEZ par le nom de votre image (ex: relationnel.png)
+        % Si vous n'avez pas l'image, le cadre 'demo' s'affichera
+        \includegraphics[width=0.9\textwidth, height=0.6\textheight, keepaspectratio]{schéma_relationnel.jpg}
+        \caption{Schéma Relationnel}
+    \end{figure}
+    
+\end{frame}
+
+% ------------------------------------------------
+% SLIDE 3 : REQUÊTE COMPLEXE
+% ------------------------------------------------
+% ------------------------------------------------
+% SLIDE 3 : REQUÊTE COMPLEXE (Disponibilité Formules)
+% ------------------------------------------------
+\begin{frame}[fragile]{3. Exemple de Requête Complexe}
+    \textbf{Objectif :} Afficher les formules disponibles en temps réel (selon le jour et l'heure).
+    
+    \begin{lstlisting}[basicstyle=\tiny\ttfamily]
+SELECT 
+    f.formule_id, f.nom, f.prix, ci.nom AS nom_categorie
+FROM formules AS f
+INNER JOIN composer_formules AS cf ON cf.formule_id = f.formule_id
+INNER JOIN categories_items AS ci 
+    ON ci.categorie_item_id = cf.categorie_item_id
+WHERE f.restaurant_id = ?  
+  AND (
+    -- 1. Aucune restriction (formule toujours dispo)
+    NOT EXISTS (
+        SELECT 1 FROM avoir_conditions_formules 
+        WHERE formule_id = f.formule_id
+    )
+    OR 
+    -- 2. Restrictions respectees (jour et heure actuels)
+    EXISTS (
+       SELECT 1
+       FROM avoir_conditions_formules AS acf
+       JOIN conditions_formules AS cond 
+         ON acf.condition_formule_id = cond.condition_formule_id
+       WHERE acf.formule_id = f.formule_id 
+         AND cond.jour_disponibilite = EXTRACT(ISODOW FROM CURRENT_DATE)
+         AND CURRENT_TIME BETWEEN cond.creneau_horaire_debut 
+                              AND cond.creneau_horaire_fin
+   ))
+ORDER BY f.prix
+    \end{lstlisting}
+    
+    \vspace{0.1cm}
+    \tiny 
+    \textit{Note : Utilisation de \texttt{NOT EXISTS} / \texttt{EXISTS} et des fonctions temporelles \texttt{EXTRACT(ISODOW)} et \texttt{CURRENT\_TIME} pour le filtrage dynamique.}
+\end{frame}
+% ------------------------------------------------
+% SLIDE 4 : L'APPLICATION
+% ------------------------------------------------
+\begin{frame}{4. Démonstration de l'Application}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \textbf{Architecture Technique :}
+        \begin{itemize}
+            \item \textbf{Backend} : PHP (Sans framework, modèle MVC artisanal).
+            \item \textbf{BDD} : PostgreSQL + PostGIS (Coordonnées GPS).
+            \item \textbf{Frontend} : HTML5 / CSS3.
+        \end{itemize}
+        
+        \vspace{0.5cm}
+        
+        \textbf{Fonctionnalités clés :}
+        \begin{itemize}
+            \item Panier dynamique.
+            \item Calcul automatique des points.
+            \item Mode "Invité" vs "Client".
+        \end{itemize}
+
+        \column{0.5\textwidth}
+        % \begin{figure}
+        %     \centering
+        %     % REMPLACEZ par une capture d'écran de votre site
+        %     \includegraphics[width=\textwidth, angle=-5]{} 
+        %     \caption{Interface de commande}
+        % \end{figure}
+    \end{columns}
+\end{frame}
+
+\end{document}
