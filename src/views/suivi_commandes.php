@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -69,11 +70,22 @@
             transition: color 0.2s;
             font-size: 0.95rem;
         }
-        .header-actions a:hover { color: var(--accent-color); }
-        .header-actions a.active { color: var(--accent-color); }
 
-        .btn-logout { color: var(--danger-color) !important; }
-        .btn-logout:hover { text-decoration: underline; }
+        .header-actions a:hover {
+            color: var(--accent-color);
+        }
+
+        .header-actions a.active {
+            color: var(--accent-color);
+        }
+
+        .btn-logout {
+            color: var(--danger-color) !important;
+        }
+
+        .btn-logout:hover {
+            text-decoration: underline;
+        }
 
         /* Badge Invité */
         .badge-guest {
@@ -110,7 +122,11 @@
             align-items: flex-start;
             gap: 15px;
         }
-        .info-box a { color: var(--info-text); font-weight: bold; }
+
+        .info-box a {
+            color: var(--info-text);
+            font-weight: bold;
+        }
 
         /* --- 5. Carte de Suivi --- */
         .commande-card {
@@ -119,7 +135,7 @@
             padding: 30px;
             box-shadow: var(--card-shadow);
             margin-bottom: 25px;
-            border: 1px solid rgba(0,0,0,0.02);
+            border: 1px solid rgba(0, 0, 0, 0.02);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -161,14 +177,16 @@
         }
 
         .status-processing {
-            background-color: #fff3cd; /* Jaune pastel */
+            background-color: #fff3cd;
+            /* Jaune pastel */
             color: #856404;
         }
 
         /* Détails */
         .card-body {
             display: grid;
-            grid-template-columns: 1fr auto; /* Infos à gauche, Prix à droite */
+            grid-template-columns: 1fr auto;
+            /* Infos à gauche, Prix à droite */
             gap: 20px;
             align-items: end;
             margin-bottom: 25px;
@@ -179,7 +197,12 @@
             font-size: 0.95rem;
             color: var(--text-main);
         }
-        .info-label { color: var(--text-muted); font-weight: 500; margin-right: 5px; }
+
+        .info-label {
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-right: 5px;
+        }
 
         .total-price {
             font-size: 1.5rem;
@@ -207,6 +230,7 @@
             font-weight: 600;
             transition: all 0.2s;
         }
+
         .btn-details:hover {
             background-color: #f8f9fa;
             border-color: #ccc;
@@ -223,6 +247,7 @@
             transition: all 0.2s;
             box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2);
         }
+
         .btn-recue:hover {
             background-color: #219150;
             transform: translateY(-2px);
@@ -247,112 +272,121 @@
             font-weight: 600;
             transition: color 0.2s;
         }
-        .btn-retour:hover { color: var(--primary-color); }
 
+        .btn-retour:hover {
+            color: var(--primary-color);
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div class="header-bar">
-        <?php if (isset($_SESSION['client_id'])): ?>
-            <div class="user-info">
-                Bonjour, <strong>&nbsp;<?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !
-                
-                <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
-                    <span class="badge-guest">Mode Invité</span>
-                <?php endif; ?>
-            </div>
+        <div class="header-bar">
+            <?php if (isset($_SESSION['client_id'])): ?>
+                <div class="user-info">
+                    Bonjour, <strong>&nbsp;<?= htmlspecialchars($_SESSION['client_nom']) ?></strong> !
 
-            <div class="header-actions">
-                <a href="index.php">Restaurants</a>
-                <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">Panier</a>
-                <a href="suivi.php" class="active">Suivi</a>
-                
-                <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
-                    <a href="historique.php">Historique</a>
-                <?php endif; ?>
+                    <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+                        <span class="badge-guest">Mode Invité</span>
+                    <?php endif; ?>
+                </div>
 
-                <a href="logout.php" class="btn-logout">Se déconnecter</a>
+                <div class="header-actions">
+                    <a href="index.php">Restaurants</a>
+                    <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">Panier</a>
+                    <a href="suivi.php" class="active">Suivi</a>
+
+                    <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                        <a href="historique.php">Historique</a>
+                    <?php endif; ?>
+
+                    <a href="logout.php" class="btn-logout">Se déconnecter</a>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <h2 class="section-title">📦 Suivi de mes commandes</h2>
+
+        <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+            <div class="info-box">
+                <span style="font-size: 1.5rem;">ℹ️</span>
+                <div>
+                    <strong>Mode Invité Activé</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.95rem;">
+                        Une fois que vous aurez confirmé la réception de votre commande, votre session invité sera terminée.
+                        <br>
+                        <a href="create_account.php">Créez un compte</a> pour conserver votre historique.
+                    </p>
+                </div>
             </div>
         <?php endif; ?>
-    </div>
 
-    <h2 class="section-title">📦 Suivi de mes commandes</h2>
+        <?php
+        if ($stmt->rowCount() > 0) {
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                extract($row);
 
-    <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
-        <div class="info-box">
-            <span style="font-size: 1.5rem;">ℹ️</span>
-            <div>
-                <strong>Mode Invité Activé</strong>
-                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">
-                    Une fois que vous aurez confirmé la réception de votre commande, votre session invité sera terminée.
-                    <br>
-                    <a href="create_account.php">Créez un compte</a> pour conserver votre historique.
-                </p>
-            </div>
-        </div>
-    <?php endif; ?>
+                $etat_label = "En cours de préparation";
+                $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
 
-    <?php
-    if ($stmt->rowCount() > 0) {
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            extract($row);
+                echo "<div class='commande-card'>";
 
-            $etat_label = "En cours de préparation";
-            $date_formatee = date('d/m/Y à H:i', strtotime($date_commande));
-
-            echo "<div class='commande-card'>";
-                
                 // Header Carte
                 echo "<div class='card-header'>";
-                    echo "<div>";
-                        echo "<h3 class='order-id'>Commande #{$commande_id}</h3>";
-                        echo "<div class='order-date'>📅 {$date_formatee}</div>";
-                    echo "</div>";
-                    echo "<span class='status-badge status-processing'>⏳ {$etat_label}</span>";
+                echo "<div>";
+                echo "<h3 class='order-id'>Commande #{$commande_id}</h3>";
+                echo "<div class='order-date'>📅 {$date_formatee}</div>";
+                echo "</div>";
+                echo "<span class='status-badge status-processing'>⏳ {$etat_label}</span>";
                 echo "</div>";
 
                 // Corps Carte (Info + Prix)
                 echo "<div class='card-body'>";
-                    echo "<div class='details-col'>";
-                        echo "<div class='info-row'><span class='info-label'>Restaurant :</span> <strong>{$restaurant_nom}</strong></div>";
-                        echo "<div class='info-row'><span class='info-label'>Adresse :</span> {$restaurant_adresse}</div>";
-                        
-                        if (!empty($heure_retrait)) {
-                            $retrait_formatee = date('H:i', strtotime($heure_retrait));
-                            echo "<div class='info-row'><span class='info-label'>Heure de retrait :</span> <strong>{$retrait_formatee}</strong></div>";
-                        }
-                    echo "</div>";
+                echo "<div class='details-col'>";
+                echo "<div class='info-row'><span class='info-label'>Restaurant :</span> <strong>{$restaurant_nom}</strong></div>";
+                echo "<div class='info-row'><span class='info-label'>Adresse :</span> {$restaurant_adresse}</div>";
 
-                    echo "<div class='total-price'>" . number_format($prix_total, 2, ',', ' ') . " €</div>";
+                if (!empty($heure_retrait)) {
+                    $est_asap = isset($row['est_asap']) ? $row['est_asap'] : false;
+                    if ($est_asap) {
+                        echo "<div class='info-row'><span class='info-label'>Heure de livraison :</span> <strong>Dès que possible</strong></div>";
+                    } else {
+                        $retrait_formatee = date('H:i', strtotime($heure_retrait));
+                        echo "<div class='info-row'><span class='info-label'>Heure de livraison :</span> <strong>{$retrait_formatee}</strong></div>";
+                    }
+                }
+                echo "</div>";
+
+                echo "<div class='total-price'>" . number_format($prix_total, 2, ',', ' ') . " €</div>";
                 echo "</div>";
 
                 // Actions
                 echo "<div class='card-actions'>";
-                    echo "<a href='detail_commande.php?id={$commande_id}' class='btn-details'>📄 Détails</a>";
-                    
-                    echo "<form method='POST' action='marquer_recue.php' style='margin: 0;'>";
-                        echo "<input type='hidden' name='commande_id' value='{$commande_id}'>";
-                        echo "<button type='submit' class='btn-recue' onclick='return confirm(\"Confirmez-vous avoir reçu cette commande ?\");'>✅ J'ai reçu ma commande</button>";
-                    echo "</form>";
+                echo "<a href='detail_commande.php?id={$commande_id}' class='btn-details'>📄 Détails</a>";
+
+                echo "<form method='POST' action='marquer_recue.php' style='margin: 0;'>";
+                echo "<input type='hidden' name='commande_id' value='{$commande_id}'>";
+                echo "<button type='submit' class='btn-recue' onclick='return confirm(\"Confirmez-vous avoir reçu cette commande ?\");'>✅ J'ai reçu ma commande</button>";
+                echo "</form>";
                 echo "</div>";
 
-            echo "</div>";
-        }
-    } else {
-        echo "<div class='no-commandes'>";
+                echo "</div>";
+            }
+        } else {
+            echo "<div class='no-commandes'>";
             echo "<h3>Aucune commande en cours 📭</h3>";
             echo "<p>Vos commandes apparaîtront ici une fois validées.</p>";
             echo "<a href='index.php' style='color:var(--accent-color); font-weight:bold; text-decoration:none; margin-top:10px; display:inline-block;'>Commander maintenant →</a>";
-        echo "</div>";
-    }
-    ?>
+            echo "</div>";
+        }
+        ?>
 
-    <a href="index.php" class="btn-retour">← Retour aux restaurants</a>
+        <a href="index.php" class="btn-retour">← Retour aux restaurants</a>
 
-</div>
+    </div>
 
 </body>
+
 </html>

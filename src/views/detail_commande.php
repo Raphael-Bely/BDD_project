@@ -229,8 +229,13 @@
     echo "<p><span class='label'>Date :</span> " . $dateAffichee . "</p>";
 
     if (!empty($commande_info['heure_retrait'])) {
-        $retraitCmd = new DateTime($commande_info['heure_retrait']);
-        echo "<p><span class='label'>Retrait :</span> " . $retraitCmd->format('H:i') . "</p>";
+        $est_asap = isset($commande_info['est_asap']) ? $commande_info['est_asap'] : false;
+        if ($est_asap) {
+            echo "<p><span class='label'>Retrait :</span> Dès que possible</p>";
+        } else {
+            $retraitCmd = new DateTime($commande_info['heure_retrait']);
+            echo "<p><span class='label'>Retrait :</span> " . $retraitCmd->format('H:i') . "</p>";
+        }
     }
     echo "</div>";
 
